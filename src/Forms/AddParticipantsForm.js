@@ -1,20 +1,10 @@
 import * as React from 'react';
-import { styled, alpha } from '@mui/material/styles';
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import InputBase from '@mui/material/InputBase';
-import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import { Grid} from '@mui/material';
 import {TextField} from '@mui/material';
 import { useState } from 'react';
-import {InputAdornment} from '@mui/material';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
 import { DataGrid } from '@mui/x-data-grid';
 import { collection, getDocs, getFirestore, query, where} from 'firebase/firestore'
 import { auth } from "../firebase-config.js";
@@ -22,6 +12,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 
 const columns = [
   // { field: 'userId', headerName: 'ID', width: 70 },
+  // { field: 'id', headerName: 'ID', width: 70, checkboxSelection: true},
   { field: 'name', headerName: 'First name', width: 180 },
   { field: 'surname', headerName: 'Last name', width: 180 },
   { field: 'supervisor', headerName: 'Supervisor', width: 190 },
@@ -30,10 +21,17 @@ const columns = [
 
 export function AddParticipantsForm({
   selectedRows,
-  handleSelectionModelChange
+  handleSelectedRowsChange,
+  currentSelection = []
 }) {
 
   const [rows, setRows] = useState([]);
+
+  const [pageLoadSelection, setPageLoadSelection] = useState([]);
+  const handleSelectionChange = (newSelection) => {
+    setPageLoadSelection(newSelection);
+    handleSelectedRowsChange(newSelection);
+  };
 
   const getRowsFromFirestore = async () =>{
     if(auth.currentUser) {
@@ -43,11 +41,14 @@ export function AddParticipantsForm({
       const fetchedRows = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
+        const checked = currentSelection.includes(doc.id);
         fetchedRows.push({
           id: doc.id,
+          // id: data.userId,
           surname: data.surname,
           name: data.name,
           supervisor: data.supervisor,
+          checked: checked,
         });
       });
       setRows(fetchedRows);
@@ -57,6 +58,13 @@ export function AddParticipantsForm({
   React.useEffect(() => {
     getRowsFromFirestore();
   }, []);
+
+  React.useEffect(() => {
+      const initialSelectedRows = rows
+      .filter((row) => row.checked)
+      .map((row) => row.id);
+      setPageLoadSelection(initialSelectedRows);
+  }, [rows]);
 
   const [search, setSearch] = useState("");
   const onSearchChange = (event) => {
@@ -70,7 +78,6 @@ export function AddParticipantsForm({
 
     if(auth.currentUser) {
       const database = getFirestore();
-      // Tutaj zmodyfikować albo kod albo dane w bazie żeby dało się robić query na więcej niż jednym polu
       const q = query(collection(database, 'User'), where("name", "==" , search));
       const querySnapshot = await getDocs(q);
       const fetchedRows = [];
@@ -86,6 +93,9 @@ export function AddParticipantsForm({
       setRows(fetchedRows);
   }
   };
+
+  // console.log(rows.supervisor);
+  // console.log(currentSelection);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -121,7 +131,9 @@ export function AddParticipantsForm({
                pageSize={5}
                rowsPerPageOptions={[5]}
                checkboxSelection
-              onRowSelectionModelChange={handleSelectionModelChange}
+              //  onRowSelectionModelChange={handleSelectedRowsChange}
+               onRowSelectionModelChange={handleSelectionChange}
+               rowSelectionModel={pageLoadSelection}
              />
             </div>
           </Grid>

@@ -66,7 +66,6 @@ export function ViewTask() {
           start_date: data.start_date.toDate(),
         });
       });
-      console.log('fetchedTasks:', fetchedTasks);
       setTasks(fetchedTasks);
     }
   };
