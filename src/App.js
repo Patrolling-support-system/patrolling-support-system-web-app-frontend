@@ -9,6 +9,7 @@ import { AccountSettings } from './AccountSettings';
 import {ResetPasswordForm} from './Forms/ResetPasswordForm'
 import {ChangePasswordForm} from './Forms/ChangePasswordForm'
 import { TaskDetails } from './TaskDetails';
+import { EditTaskComponent } from './Components/EditTaskComponent';
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
         <Route exact path="/createTask" element={<CreateTask/>} />
         <Route exact path="/viewTasks" element={<ViewTask/>} />
         <Route path="/viewTasks/:taskId" element={<TaskDetails/>} />
+        <Route path="/editTask/:taskId" element={<EditTaskComponent/>} />
         <Route exact path="/AccountSettings" element={<AccountSettings/>} />
         <Route exact path="/ResetPassword" element={<ResetPasswordForm/>} />
         <Route exact path="/changePassword" element={<ChangePasswordForm/>} />

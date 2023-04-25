@@ -13,10 +13,10 @@ import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import IconButton from '@mui/material/IconButton';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from "./firebase-config.js";
-import { AddParticipantsForm } from './Forms/AddParticipantsForm.js';
+import { auth } from "../firebase-config.js";
+import { AddParticipantsForm } from '../Forms/AddParticipantsForm.js';
 import { useState } from 'react';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -24,12 +24,11 @@ import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import 'dayjs/locale/pl';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, Timestamp, where} from 'firebase/firestore'
+import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, setDoc, where} from 'firebase/firestore'
 import { useEffect } from 'react';
+import moment from 'moment';
 
-
-const steps = ['Enter task details', 'Choose participants', 'Review task'];
-
+const steps = ['Edit task details', 'Edit participants', 'Review changes'];
 
 const theme = createTheme({
   palette: {
@@ -48,13 +47,15 @@ const theme = createTheme({
   },
 });
 
-export function CreateTask() {
+export function EditTaskComponent() {
   const [activeStep, setActiveStep] = React.useState(0);
   const [formData, setFormData] = useState({});
+  const {taskId} = useParams();
+  const [isLoaded, setIsLoaded] = React.useState(false);
 
   const handleNext = async () => {
     if (activeStep === steps.length - 1) {
-      createFirebaseDocument(taskName,locationName,selectedParticipants,startDate,endDate,taskDescription)
+      updateFirebaseDocument(taskName,locationName,selectedParticipants,startDate,endDate,taskDescription)
     } 
     if (activeStep === steps.length - 2) {
       getNamesFromFirestore(selectedParticipants);
@@ -66,9 +67,49 @@ export function CreateTask() {
     setActiveStep(activeStep - 1);
   };
 
+  const [documentData, setDocumentData] = React.useState(null);
+
+const getDocumentDetails = async () => {
+  const user = await new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
+
+  if (user) {
+    const database = getFirestore();
+    const docRef = doc(database, 'Tasks', `${taskId}`);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      setDocumentData(data);
+      // console.log(documentData);
+      setTaskName(data.name);
+      setLocationName(data.location);
+      setCurrentStartDate(moment(data.start_date.toDate()).format('DD/MM/YYYY HH:mm'));
+      setCurrentEndDate(moment(data.end_date.toDate()).format('DD/MM/YYYY HH:mm'));
+      setTaskDescription(data.task_description);
+      handleCurrentSelectionChange(data.patrol_participants)
+    } else {
+      console.log("No such document!");
+
+  }
+};
+}
+
+React.useEffect(() => {
+  getDocumentDetails();
+}, [])
+
+React.useEffect(() => {
+  // console.log(documentData);
+  setIsLoaded(true);
+}, [documentData])
 
 
-  const createFirebaseDocument = async (
+
+  const updateFirebaseDocument = async (
     taskName,
     locationName,
     selectedParticipants,
@@ -78,15 +119,19 @@ export function CreateTask() {
     if(auth.currentUser) {
       const database = getFirestore();
 
-      const docRef = await addDoc(collection(database, 'Tasks'), {
+      const docRef = doc(database, 'Tasks', taskId);
+      setDoc(docRef, {
         name: taskName,
         location: locationName,
         patrol_participants: selectedParticipants,
         start_date: startDate,
         end_date: endDate,
         task_description: taskDescription,
+      }).then(docRef => {
+        console.log(`Document with id: ${taskId} has been updated successfully`)
+      }).catch(error => {
+        console.log(error);
       });
-      console.log("Added new document with ID: ", docRef.id)
     }
   }
 
@@ -103,7 +148,7 @@ React.useEffect(() => {
 }, [navigate]);
 
 const handleReturnClick = () => {
-  navigate("/home")
+  navigate(`/viewTasks/${taskId}`);
 }
 
 const [taskName, setTaskName] = useState('');
@@ -123,13 +168,20 @@ const handleTaskStartDateChange = (newDate) => {
   setTaskStartDate(newDate);
   setStartDate(selectedStartDate);
 };
-
+const [currentStartDate, setCurrentStartDate] = useState(null);
+const handleCurrentStartDateChange = (newDate) => {
+  setCurrentStartDate(newDate);
+};
 const [taskEndDate, setTaskEndDate] = useState(null);
 const [endDate, setEndDate] = useState(new Date())
 const handleTaskEndDateChange = (newDate) => {
   const selectedEndDate = newDate.toDate()
   setTaskEndDate(newDate);
   setEndDate(selectedEndDate);
+};
+const [currentEndDate, setCurrentEndDate] = useState(null);
+const handleCurrentEndDateChange = (newDate) => {
+  setCurrentEndDate(newDate);
 };
 
 const [taskDescription, setTaskDescription] = useState('');
@@ -154,6 +206,7 @@ const getNamesFromFirestore = async (selectedParticipants) =>{
       const data = doc.data();
       const participant = {
         id: doc.id,
+        // id: data.userId,
         name: data.name,
         surname: data.surname
       };
@@ -163,15 +216,24 @@ const getNamesFromFirestore = async (selectedParticipants) =>{
   }
 }
 
+const [currentSelection, setCurrentSelection] = useState([]);
+const handleCurrentSelectionChange = (newSelection) => {
+  setCurrentSelection(newSelection);
+};
+
+
+// console.log(documentData);
+
 function getStepContent(step) {
   switch (step) {
     case 0:
       return (
         <React.Fragment>
           <Typography variant="h6" gutterBottom>
-            Enter task details: 
+            Edit task details: 
           </Typography>
-          <Grid container spacing={4}>
+          {isLoaded ? (
+            <Grid container spacing={4}>
             <Grid item xs={12} sm={10}>
               <TextField
                 required
@@ -196,24 +258,31 @@ function getStepContent(step) {
                 onChange={handleLocationNameChange}
               />
             </Grid>
-            <Grid item xs={12} sm={10}>
+            <Grid item xs={12} sm={10} style={{ marginTop: '20px' }}>
+              <Typography> 
+                Task start date:
+              </Typography>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <MobileDateTimePicker
                   required
-                  label='Task start time *'
+                  label={currentStartDate}
                   slotProps={{ textField: { size: 'small' } }}
                   ampm={false}
                   openTo="year"
                   format='DD/MM/YYYY HH:mm'
                   onChange={handleTaskStartDateChange}
+                  value={taskStartDate}
                 />
               </LocalizationProvider>
             </Grid>
             <Grid item xs={12} sm={10}>
+              <Typography>
+                Task end date:
+              </Typography>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <MobileDateTimePicker
                   required
-                  label='Task end time *'
+                  label={currentEndDate}
                   slotProps={{ textField: { size: 'small' } }}
                   ampm={false}
                   format='DD/MM/YYYY HH:mm'
@@ -232,13 +301,18 @@ function getStepContent(step) {
                 />
             </Grid>
           </Grid>
+          ) : (
+            <Typography>
+              Loading...
+            </Typography>
+          )}
         </React.Fragment>
       );
     case 1:
       return <AddParticipantsForm
       selectedRows={selectedParticipants}
-      // handleSelectionModelChange={handleSelectedParticipantsChange}
       handleSelectedRowsChange={handleSelectedParticipantsChange}
+      currentSelection={currentSelection}
       />;
     case 2:
       return (
@@ -361,7 +435,7 @@ function getStepContent(step) {
       <Container component="main" maxWidth="md" sx={{ mb: 4 }}>
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
           <Typography component="h1" variant="h4" align="center">
-            Create new patrolling task
+            Edit patrolling task
           </Typography>
           <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 5 }}>
             {steps.map((label) => (
@@ -373,7 +447,7 @@ function getStepContent(step) {
           {activeStep === steps.length ? (
             <React.Fragment>
               <Typography variant="h5" gutterBottom>
-                Task successfully created
+                Task successfully updated
               </Typography>
               <Typography variant="subtitle1"></Typography>
             </React.Fragment>
@@ -392,7 +466,7 @@ function getStepContent(step) {
                   onClick={handleNext}
                   sx={{ mt: 3, ml: 1 }}
                 >
-                  {activeStep === steps.length - 1 ? 'Create task' : 'Next'}
+                  {activeStep === steps.length - 1 ? 'Update task' : 'Next'}
                 </Button>
               </Box>
             </React.Fragment>

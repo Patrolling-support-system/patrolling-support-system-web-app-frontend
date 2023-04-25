@@ -28,9 +28,7 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
-// import Chart from './Chart';
-// import Deposits from './Deposits';
-// import Orders from './Orders';
+
 
 
 const drawerWidth = 240;
@@ -190,7 +188,7 @@ function HomeContent() {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              Dashboard
+              Patrolling Support System Home Page
             </Typography>
             {/* <IconButton color="inherit">
               <Badge badgeContent={4} color="secondary">
