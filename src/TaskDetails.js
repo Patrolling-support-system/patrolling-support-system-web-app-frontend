@@ -29,8 +29,10 @@ import { doc, getDoc, getFirestore } from "firebase/firestore";
 import TaskDetailsComponent from "./Components/TaskDetailsComponent.js";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import MapIcon from "@mui/icons-material/Map";
+import CheckpointIcon from "@mui/icons-material/LocationOn"
 import ChatIcon from "@mui/icons-material/Chat";
 import { MapView } from "./LiveMap";
+import { CheckpointsView } from "./ChecpointsMap.js";
 
 const drawerWidth = 240;
 
@@ -177,6 +179,16 @@ export function TaskDetails() {
           <MapIcon />
         </ListItemIcon>
         <ListItemText primary="View map" />
+      </ListItemButton>
+      <ListItemButton
+        onClick={() =>
+          handleItemClick(<CheckpointsView documentData={documentData} />)
+        }
+      >
+        <ListItemIcon>
+          <CheckpointIcon />
+        </ListItemIcon>
+        <ListItemText primary="Checkpoints" />
       </ListItemButton>
       <ListItemButton onClick={() => handleItemClick(ChatComponent)}>
         <ListItemIcon>

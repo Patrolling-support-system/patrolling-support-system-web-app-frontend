@@ -1,24 +1,13 @@
 import { Loader } from "@googlemaps/js-api-loader";
-import { useMemo } from "react";
 import {
   GoogleMap,
   useLoadScript,
   Marker,
   Polyline,
-  LatLng,
 } from "@react-google-maps/api";
-import { useParams } from "react-router-dom";
 import * as React from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
-import {
-  GeoPoint,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  getFirestore,
-} from "firebase/firestore";
+import { collection, getDocs, getFirestore } from "firebase/firestore";
 
 let url = "http://maps.google.com/mapfiles/ms/icons/green.png";
 
@@ -40,7 +29,8 @@ const center = {
 };
 
 const seededRandom = (input) => Math.sin((input + 1) / Math.PI);
-const randomColor = (index) =>   "hsl(" + Math.floor(seededRandom(index) * 0xff) + ", 50%, 50%)";
+const randomColor = (index) =>
+  "hsl(" + Math.floor(seededRandom(index) * 0xff) + ", 50%, 50%)";
 
 export function MapView({ documentData }) {
   // load routes data from firebase
@@ -75,8 +65,6 @@ export function MapView({ documentData }) {
   if (loadError) return "Error loading maps";
   if (!isLoaded) return "Loading maps";
 
-  console.log(patrolRouteData);
-
   return (
     <div>
       <h4>{documentData.name}</h4>
@@ -86,7 +74,6 @@ export function MapView({ documentData }) {
         center={center}
       >
         {documentData.checkpoints?.map((checkpoint, index) => {
-          console.log("XDD");
           var marker = (
             <Marker
               icon={{ url: url }}
@@ -102,20 +89,15 @@ export function MapView({ documentData }) {
           return marker;
         })}
 
-        {patrolRouteData.map((patrolRoute, index) => 
-            <Polyline
-              key={index}
-              path={patrolRoute.route.map(
-                (route, index) =>
-                  new window.google.maps.LatLng(
-                    route._lat,
-                    route._long
-                  )
-              )}
-              options={{ strokeColor: randomColor(index) }}
-            />
-          
-        )}
+        {patrolRouteData.map((patrolRoute, index) => (
+          <Polyline
+            key={index}
+            path={patrolRoute.route.map(
+              (route) => new window.google.maps.LatLng(route._lat, route._long)
+            )}
+            options={{ strokeColor: randomColor(index) }}
+          />
+        ))}
 
         {patrolRouteData.map((patrolRoute, index) => (
           <Marker
@@ -123,7 +105,7 @@ export function MapView({ documentData }) {
             icon={{
               path: window.google.maps.SymbolPath.CIRCLE,
               fillColor: randomColor(index),
-              fillOpacity:1,
+              fillOpacity: 1,
               scale: 6,
               strokeColor: randomColor(index),
               strokeWeight: 0.5,
