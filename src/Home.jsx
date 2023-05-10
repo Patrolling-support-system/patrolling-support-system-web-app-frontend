@@ -104,9 +104,9 @@ function HomeContent() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth , (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
-        navigate("/", {replace: true})
+        navigate("/", { replace: true })
       }
     });
 
@@ -127,7 +127,7 @@ function HomeContent() {
 
   const handleLogOut = () => {
     signOut(auth).then(() =>
-    navigate("/"));
+      navigate("/"));
   }
 
   const mainListItems = (
@@ -198,15 +198,15 @@ function HomeContent() {
             <IconButton color="inherit" onClick={() => handleLogOut()}>
               {/* To do: Uniemozliwić cofanie po wylogowaniu lub wymagać stanu zalogowania przy każdej nawigacji */}
               <Typography
-                    component="h1"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1, marginRight: '4px'}}
-                  >
-                    Sign Out
-                </Typography>
-                <Badge>
+                component="h1"
+                variant="h6"
+                color="inherit"
+                noWrap
+                sx={{ flexGrow: 1, marginRight: '4px' }}
+              >
+                Sign Out
+              </Typography>
+              <Badge>
                 <ExitToAppIcon />
               </Badge>
             </IconButton>

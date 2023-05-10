@@ -2,11 +2,11 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
-import { Grid} from '@mui/material';
-import {TextField} from '@mui/material';
+import { Grid } from '@mui/material';
+import { TextField } from '@mui/material';
 import { useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { collection, getDocs, getFirestore, query, where} from 'firebase/firestore'
+import { collection, getDocs, getFirestore, query, where } from 'firebase/firestore'
 import { auth } from "../firebase-config.js";
 import ReplayIcon from '@mui/icons-material/Replay';
 
@@ -33,8 +33,8 @@ export function AddParticipantsForm({
     handleSelectedRowsChange(newSelection);
   };
 
-  const getRowsFromFirestore = async () =>{
-    if(auth.currentUser) {
+  const getRowsFromFirestore = async () => {
+    if (auth.currentUser) {
       const database = getFirestore();
       const q = query(collection(database, 'User'));
       const querySnapshot = await getDocs(q);
@@ -60,10 +60,12 @@ export function AddParticipantsForm({
   }, []);
 
   React.useEffect(() => {
-      const initialSelectedRows = rows
+    const initialSelectedRows = rows
       .filter((row) => row.checked)
       .map((row) => row.id);
-      setPageLoadSelection(initialSelectedRows);
+    setPageLoadSelection(initialSelectedRows);
+    // jak by cię coś psuło to tutaj patrzeć
+    handleSelectedRowsChange(initialSelectedRows);
   }, [rows]);
 
   const [search, setSearch] = useState("");
@@ -74,11 +76,11 @@ export function AddParticipantsForm({
     }
   }
 
-  const handleSearchChange = async (search) => { 
+  const handleSearchChange = async (search) => {
 
-    if(auth.currentUser) {
+    if (auth.currentUser) {
       const database = getFirestore();
-      const q = query(collection(database, 'User'), where("name", "==" , search));
+      const q = query(collection(database, 'User'), where("name", "==", search));
       const querySnapshot = await getDocs(q);
       const fetchedRows = [];
       querySnapshot.forEach((doc) => {
@@ -91,7 +93,7 @@ export function AddParticipantsForm({
         });
       });
       setRows(fetchedRows);
-  }
+    }
   };
 
   // console.log(rows.supervisor);
@@ -103,38 +105,38 @@ export function AddParticipantsForm({
         <Grid container spacing={4} justify='center' alignItems='center'>
           <Grid item xs={12} sm={10} margin={10}>
             <TextField
-            id="search"
-            type="search"
-            label="Search"
-            fullWidth
-            placeholder='Search participants'
-            value={search}
-            onChange={onSearchChange}
-            onKeyDown={onSearchChange}
-            InputProps={{
-              endAdornment: (
-                <React.Fragment>
-                <IconButton onClick={() => getRowsFromFirestore()}>
-                  <ReplayIcon/>
-                </IconButton>
-                <IconButton onClick={() => handleSearchChange(search)}>
-                  <SearchIcon/>
-                </IconButton>
-                </React.Fragment>
-              ),
-            }}
-          />
+              id="search"
+              type="search"
+              label="Search"
+              fullWidth
+              placeholder='Search participants'
+              value={search}
+              onChange={onSearchChange}
+              onKeyDown={onSearchChange}
+              InputProps={{
+                endAdornment: (
+                  <React.Fragment>
+                    <IconButton onClick={() => getRowsFromFirestore()}>
+                      <ReplayIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleSearchChange(search)}>
+                      <SearchIcon />
+                    </IconButton>
+                  </React.Fragment>
+                ),
+              }}
+            />
             <div style={{ height: 400, width: '100%' }}>
-             <DataGrid
-               rows={rows}
-               columns={columns}
-               pageSize={5}
-               rowsPerPageOptions={[5]}
-               checkboxSelection
-              //  onRowSelectionModelChange={handleSelectedRowsChange}
-               onRowSelectionModelChange={handleSelectionChange}
-               rowSelectionModel={pageLoadSelection}
-             />
+              <DataGrid
+                rows={rows}
+                columns={columns}
+                pageSize={5}
+                rowsPerPageOptions={[5]}
+                checkboxSelection
+                //  onRowSelectionModelChange={handleSelectedRowsChange}
+                onRowSelectionModelChange={handleSelectionChange}
+                rowSelectionModel={pageLoadSelection}
+              />
             </div>
           </Grid>
         </Grid>

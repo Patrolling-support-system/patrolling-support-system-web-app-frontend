@@ -24,7 +24,7 @@ import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import 'dayjs/locale/pl';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, Timestamp, where} from 'firebase/firestore'
+import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, Timestamp, where } from 'firebase/firestore'
 import { useEffect } from 'react';
 
 
@@ -54,8 +54,8 @@ export function CreateTask() {
 
   const handleNext = async () => {
     if (activeStep === steps.length - 1) {
-      createFirebaseDocument(taskName,locationName,selectedParticipants,startDate,endDate,taskDescription)
-    } 
+      createFirebaseDocument(taskName, locationName, selectedParticipants, startDate, endDate, taskDescription)
+    }
     if (activeStep === steps.length - 2) {
       getNamesFromFirestore(selectedParticipants);
     }
@@ -74,17 +74,18 @@ export function CreateTask() {
     selectedParticipants,
     startDate,
     endDate,
-    taskDescription ) => {
-    if(auth.currentUser) {
+    taskDescription) => {
+    if (auth.currentUser) {
       const database = getFirestore();
 
       const docRef = await addDoc(collection(database, 'Tasks'), {
         name: taskName,
         location: locationName,
-        patrol_participants: selectedParticipants,
-        start_date: startDate,
-        end_date: endDate,
-        task_description: taskDescription,
+        patrolParticipants: selectedParticipants,
+        startDate: startDate,
+        endDate: endDate,
+        taskDescription: taskDescription,
+        coordinator: auth.currentUser.uid,
       });
       console.log("Added new document with ID: ", docRef.id)
     }
@@ -92,253 +93,252 @@ export function CreateTask() {
 
   const navigate = useNavigate();
 
-React.useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth , (user) => {
-    if (!user) {
-      navigate("/", {replace: true})
-    }
-  });
-
-  return () => unsubscribe();
-}, [navigate]);
-
-const handleReturnClick = () => {
-  navigate("/home")
-}
-
-const [taskName, setTaskName] = useState('');
-const handleTaskNameChange = (event) => {
-  setTaskName(event.target.value);
-};
-
-const [locationName, setLocationName] = useState('');
-const handleLocationNameChange = (event) => {
-  setLocationName(event.target.value);
-};
-
-const [taskStartDate, setTaskStartDate] = useState(null);
-const [startDate, setStartDate] = useState(new Date());
-const handleTaskStartDateChange = (newDate) => {
-  const selectedStartDate = newDate.toDate();
-  setTaskStartDate(newDate);
-  setStartDate(selectedStartDate);
-};
-
-const [taskEndDate, setTaskEndDate] = useState(null);
-const [endDate, setEndDate] = useState(new Date())
-const handleTaskEndDateChange = (newDate) => {
-  const selectedEndDate = newDate.toDate()
-  setTaskEndDate(newDate);
-  setEndDate(selectedEndDate);
-};
-
-const [taskDescription, setTaskDescription] = useState('');
-const handleTaskDescriptionChange = (event) => {
-  setTaskDescription(event.target.value);
-};
-
-const [selectedParticipants, setSelectedParticipants] = useState([]);
-const handleSelectedParticipantsChange = (newSelectedParticipants) => {
-  setSelectedParticipants(newSelectedParticipants);
-};
-
-const [participantList, setParticipantList] = useState([]);
-const getNamesFromFirestore = async (selectedParticipants) =>{
-  if(auth.currentUser) {
-    const database = getFirestore();
-    const collectionRef = collection(database, 'User');
-    const documentQuery = query(collectionRef, where(documentId(), 'in', selectedParticipants));
-    const querySnapshot = await getDocs(documentQuery)
-     const participantsData = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const participant = {
-        id: doc.id,
-        name: data.name,
-        surname: data.surname
-      };
-      participantsData.push(participant);
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate("/", { replace: true })
+      }
     });
-    setParticipantList(participantsData);
-  }
-}
 
-function getStepContent(step) {
-  switch (step) {
-    case 0:
-      return (
-        <React.Fragment>
-          <Typography variant="h6" gutterBottom>
-            Enter task details: 
-          </Typography>
-          <Grid container spacing={4}>
-            <Grid item xs={12} sm={10}>
-              <TextField
-                required
-                id="taskName"
-                name="taskName"
-                label="Task name"
-                fullWidth
-                variant="standard"
-                value={taskName}
-                onChange={handleTaskNameChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <TextField
-                required
-                id="locationName"
-                name="locationName"
-                label="Location name"
-                fullWidth
-                variant="standard"
-                value={locationName}
-                onChange={handleLocationNameChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <MobileDateTimePicker
-                  required
-                  label='Task start time *'
-                  slotProps={{ textField: { size: 'small' } }}
-                  ampm={false}
-                  openTo="year"
-                  format='DD/MM/YYYY HH:mm'
-                  onChange={handleTaskStartDateChange}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <MobileDateTimePicker
-                  required
-                  label='Task end time *'
-                  slotProps={{ textField: { size: 'small' } }}
-                  ampm={false}
-                  format='DD/MM/YYYY HH:mm'
-                  onChange={handleTaskEndDateChange}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={12} sm={12}>
-              <TextField
-                variant='outlined'
-                label='Task description'
-                fullWidth
-                multiline
-                value={taskDescription}
-                onChange={handleTaskDescriptionChange}
-                />
-            </Grid>
-          </Grid>
-        </React.Fragment>
-      );
-    case 1:
-      return <AddParticipantsForm
-      selectedRows={selectedParticipants}
-      // handleSelectionModelChange={handleSelectedParticipantsChange}
-      handleSelectedRowsChange={handleSelectedParticipantsChange}
-      />;
-    case 2:
-      return (
-        <React.Fragment>
-                  <Typography variant="h6" gutterBottom>
-                    Enter task details: 
-                  </Typography>
-                  <Grid container spacing={4}>
-                    <Grid item xs={12} sm={10}>
-                        <Typography>
-                            Task name:
-                        </Typography>
-                        <TextField
-                          variant='outlined'
-                          margin="normal"
-                          fullWidth
-                          multiline
-                          rows={1}
-                          value={taskName}
-                          disabled
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={10}>
-                        <Typography>
-                            Location name:
-                        </Typography>
-                        <TextField
-                          variant='outlined'
-                          margin="normal"
-                          fullWidth
-                          multiline
-                          rows={1}
-                          value={locationName}
-                          disabled
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={10}>
-                    <Typography>
-                        Task Participants:
-                      </Typography>
-                    <TextField
-                          variant='outlined'
-                          margin="normal"
-                          fullWidth
-                          multiline
-                          rows={2}
-                          value={participantList.map(participant => participant.name + ' ' + participant.surname).join(', ')}
-                          disabled
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={10}>
-                      <Typography>
-                        Task start date:
-                      </Typography>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <MobileDateTimePicker
-                          slotProps={{ textField: { size: 'small' } }}
-                          ampm={false}
-                          format='DD/MM/YYYY HH:mm'
-                          value={taskStartDate}
-                          // onChange={handleTaskStartDateChange}
-                          readOnly
-                        />
-                      </LocalizationProvider>
-                    </Grid>
-                    <Grid item xs={12} sm={10} >
-                      <Typography>
-                        Task end date:
-                      </Typography>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <MobileDateTimePicker
-                            slotProps={{ textField: { size: 'small' } }}
-                            ampm={false}
-                            format='DD/MM/YYYY HH:mm'
-                            value={taskEndDate} 
-                            readOnly
-                          />
-                        </LocalizationProvider>
-                    </Grid>
-                    <Grid item xs={12} sm={10}>
-                        <Typography>
-                            Task description: 
-                        </Typography>
-                        <TextField
-                          variant='outlined'
-                          margin="normal"
-                          fullWidth
-                          multiline
-                          rows={4}
-                          value={taskDescription}
-                          disabled
-                        />
-                    </Grid>
-                  </Grid>
-                </React.Fragment>
-              );
-    default:
-      throw new Error('Unknown step');
+    return () => unsubscribe();
+  }, [navigate]);
+
+  const handleReturnClick = () => {
+    navigate("/home")
   }
-}
+
+  const [taskName, setTaskName] = useState('');
+  const handleTaskNameChange = (event) => {
+    setTaskName(event.target.value);
+  };
+
+  const [locationName, setLocationName] = useState('');
+  const handleLocationNameChange = (event) => {
+    setLocationName(event.target.value);
+  };
+
+  const [taskStartDate, setTaskStartDate] = useState(null);
+  const [startDate, setStartDate] = useState(new Date());
+  const handleTaskStartDateChange = (newDate) => {
+    const selectedStartDate = newDate.toDate();
+    setTaskStartDate(newDate);
+    setStartDate(selectedStartDate);
+  };
+
+  const [taskEndDate, setTaskEndDate] = useState(null);
+  const [endDate, setEndDate] = useState(new Date())
+  const handleTaskEndDateChange = (newDate) => {
+    const selectedEndDate = newDate.toDate()
+    setTaskEndDate(newDate);
+    setEndDate(selectedEndDate);
+  };
+
+  const [taskDescription, setTaskDescription] = useState('');
+  const handleTaskDescriptionChange = (event) => {
+    setTaskDescription(event.target.value);
+  };
+
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
+  const handleSelectedParticipantsChange = (newSelectedParticipants) => {
+    setSelectedParticipants(newSelectedParticipants);
+  };
+
+  const [participantList, setParticipantList] = useState([]);
+  const getNamesFromFirestore = async (selectedParticipants) => {
+    if (auth.currentUser) {
+      const database = getFirestore();
+      const collectionRef = collection(database, 'User');
+      const documentQuery = query(collectionRef, where(documentId(), 'in', selectedParticipants));
+      const querySnapshot = await getDocs(documentQuery)
+      const participantsData = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const participant = {
+          id: doc.id,
+          name: data.name,
+          surname: data.surname
+        };
+        participantsData.push(participant);
+      });
+      setParticipantList(participantsData);
+    }
+  }
+
+  function getStepContent(step) {
+    switch (step) {
+      case 0:
+        return (
+          <React.Fragment>
+            <Typography variant="h6" gutterBottom>
+              Enter task details:
+            </Typography>
+            <Grid container spacing={4}>
+              <Grid item xs={12} sm={10}>
+                <TextField
+                  required
+                  id="taskName"
+                  name="taskName"
+                  label="Task name"
+                  fullWidth
+                  variant="standard"
+                  value={taskName}
+                  onChange={handleTaskNameChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <TextField
+                  required
+                  id="locationName"
+                  name="locationName"
+                  label="Location name"
+                  fullWidth
+                  variant="standard"
+                  value={locationName}
+                  onChange={handleLocationNameChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <MobileDateTimePicker
+                    required
+                    label='Task start time *'
+                    slotProps={{ textField: { size: 'small' } }}
+                    ampm={false}
+                    openTo="year"
+                    format='DD/MM/YYYY HH:mm'
+                    onChange={handleTaskStartDateChange}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <MobileDateTimePicker
+                    required
+                    label='Task end time *'
+                    slotProps={{ textField: { size: 'small' } }}
+                    ampm={false}
+                    format='DD/MM/YYYY HH:mm'
+                    onChange={handleTaskEndDateChange}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={12}>
+                <TextField
+                  variant='outlined'
+                  label='Task description'
+                  fullWidth
+                  multiline
+                  value={taskDescription}
+                  onChange={handleTaskDescriptionChange}
+                />
+              </Grid>
+            </Grid>
+          </React.Fragment>
+        );
+      case 1:
+        return <AddParticipantsForm
+          selectedRows={selectedParticipants}
+          // handleSelectionModelChange={handleSelectedParticipantsChange}
+          handleSelectedRowsChange={handleSelectedParticipantsChange}
+        />;
+      case 2:
+        return (
+          <React.Fragment>
+            <Typography variant="h6" gutterBottom>
+              Enter task details:
+            </Typography>
+            <Grid container spacing={4}>
+              <Grid item xs={12} sm={10}>
+                <Typography>
+                  Task name:
+                </Typography>
+                <TextField
+                  variant='outlined'
+                  margin="normal"
+                  fullWidth
+                  multiline
+                  rows={1}
+                  value={taskName}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <Typography>
+                  Location name:
+                </Typography>
+                <TextField
+                  variant='outlined'
+                  margin="normal"
+                  fullWidth
+                  multiline
+                  rows={1}
+                  value={locationName}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <Typography>
+                  Task Participants:
+                </Typography>
+                <TextField
+                  variant='outlined'
+                  margin="normal"
+                  fullWidth
+                  multiline
+                  rows={2}
+                  value={participantList.map(participant => participant.name + ' ' + participant.surname).join(', ')}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <Typography>
+                  Task start date:
+                </Typography>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <MobileDateTimePicker
+                    slotProps={{ textField: { size: 'small' } }}
+                    ampm={false}
+                    format='DD/MM/YYYY HH:mm'
+                    value={taskStartDate}
+                    readOnly
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={10} >
+                <Typography>
+                  Task end date:
+                </Typography>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <MobileDateTimePicker
+                    slotProps={{ textField: { size: 'small' } }}
+                    ampm={false}
+                    format='DD/MM/YYYY HH:mm'
+                    value={taskEndDate}
+                    readOnly
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <Typography>
+                  Task description:
+                </Typography>
+                <TextField
+                  variant='outlined'
+                  margin="normal"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  value={taskDescription}
+                  disabled
+                />
+              </Grid>
+            </Grid>
+          </React.Fragment>
+        );
+      default:
+        throw new Error('Unknown step');
+    }
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -354,7 +354,7 @@ function getStepContent(step) {
       >
         <Toolbar>
           <IconButton onClick={() => handleReturnClick()}>
-            <ArrowBackIosIcon/>
+            <ArrowBackIosIcon />
           </IconButton>
         </Toolbar>
       </AppBar>

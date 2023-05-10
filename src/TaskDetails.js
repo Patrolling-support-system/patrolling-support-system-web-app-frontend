@@ -140,10 +140,7 @@ export function TaskDetails() {
 
   React.useEffect(() => {
     getDocumentDetails();
-    // if (documentData) {
-    //   setSelectedComponent(<TaskDetailsComponent documentData={documentData}/>);
-    // }
-  }, []);
+  }, [])
 
   React.useEffect(() => {
     if (documentData) {
@@ -159,6 +156,7 @@ export function TaskDetails() {
   const handleItemClick = (component) => {
     setSelectedComponent(component);
   };
+
 
   const mainListItems = (
     <React.Fragment>
@@ -210,6 +208,7 @@ export function TaskDetails() {
     </React.Fragment>
   );
 
+
   const secondaryListItems = (
     <React.Fragment>
       <ListItemButton onClick={() => handleReturnClick()}>
@@ -221,112 +220,208 @@ export function TaskDetails() {
     </React.Fragment>
   );
 
+
   return (
-    // <div className="App">
-    //     taskId: {taskId}
-    // </div>
 
     <ThemeProvider theme={mdTheme}>
-      <Box sx={{ display: "flex" }}>
-        <CssBaseline />
-        <AppBar position="absolute" open={open}>
-          <Toolbar
-            sx={{
-              pr: "24px", // keep right padding when drawer closed
-            }}
-          >
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleDrawer}
-              sx={{
-                marginRight: "36px",
-                ...(open && { display: "none" }),
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-            {isLoaded ? (
-              <Typography
-                component="h1"
-                variant="h6"
-                color="inherit"
-                noWrap
-                sx={{ flexGrow: 1 }}
-              >
-                Task details
-              </Typography>
-            ) : (
-              <Typography
-                component="h1"
-                variant="h6"
-                color="inherit"
-                noWrap
-                sx={{ flexGrow: 1 }}
-              >
-                Loading data...
-              </Typography>
-            )}
-            {/* <IconButton color="inherit">
-                <Badge badgeContent={4} color="secondary">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton> */}
-            {/* <IconButton color="inherit"  onClick={() => handleReturnClick()}>
-                <Typography
-                      component="h1"
-                      variant="h6"
-                      color="inherit"
-                      noWrap
-                      sx={{ flexGrow: 1, marginRight: '4px'}}
-                    >
-                      Return
-                  </Typography>
-                  <Badge>
-                  <ExitToAppIcon />
-                </Badge>
-              </IconButton> */}
-          </Toolbar>
-        </AppBar>
-        <Drawer variant="permanent" open={open}>
-          <Toolbar
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              px: [1],
-            }}
-          >
-            <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Toolbar>
-          <Divider />
-          <List component="nav">
-            {mainListItems}
-            <Divider sx={{ my: 1 }} />
-            {secondaryListItems}
-          </List>
-        </Drawer>
-        <Box
-          component="main"
+    <Box sx={{ display: "flex" }}>
+      <CssBaseline />
+      <AppBar position="absolute" open={open}>
+        <Toolbar
           sx={{
-            flexGrow: 1,
-            height: "100vh",
-            overflow: "auto",
+            pr: "24px", // keep right padding when drawer closed
           }}
         >
-          <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            {isLoaded ? (
-              <div className="render-container">{selectedComponent}</div>
-            ) : (
-              <Typography>Loading...</Typography>
-            )}
-          </Container>
-        </Box>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="open drawer"
+            onClick={toggleDrawer}
+            sx={{
+              marginRight: "36px",
+              ...(open && { display: "none" }),
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+          {isLoaded ? (
+            <Typography
+              component="h1"
+              variant="h6"
+              color="inherit"
+              noWrap
+              sx={{ flexGrow: 1 }}
+            >
+              Task details
+            </Typography>
+          ) : (
+            <Typography
+              component="h1"
+              variant="h6"
+              color="inherit"
+              noWrap
+              sx={{ flexGrow: 1 }}
+            >
+              Loading data...
+            </Typography>
+          )}
+        </Toolbar>
+      </AppBar>
+      <Drawer variant="permanent" open={open}>
+        <Toolbar
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            px: [1],
+          }}
+        >
+          <IconButton onClick={toggleDrawer}>
+            <ChevronLeftIcon />
+          </IconButton>
+        </Toolbar>
+        <Divider />
+        <List component="nav">
+          {mainListItems}
+          <Divider sx={{ my: 1 }} />
+          {secondaryListItems}
+        </List>
+      </Drawer>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          height: "100vh",
+          overflow: "auto",
+        }}
+      >
+        <Toolbar />
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          {isLoaded ? (
+            <div className="render-container">{selectedComponent}</div>
+          ) : (
+            <Typography>Loading...</Typography>
+          )}
+        </Container>
       </Box>
-    </ThemeProvider>
+    </Box>
+  </ThemeProvider>
+    // <ThemeProvider theme={mdTheme}>
+    //   <Box sx={{ display: 'flex' }}>
+    //     <CssBaseline />
+    //     <AppBar position="absolute" open={open}>
+    //       <Toolbar
+    //         sx={{
+    //           pr: '24px',
+    //         }}
+    //       >
+    //         <IconButton
+    //           edge="start"
+    //           color="inherit"
+    //           aria-label="open drawer"
+    //           onClick={toggleDrawer}
+    //           sx={{
+    //             marginRight: '36px',
+    //             ...(open && { display: 'none' }),
+    //           }}
+    //         >
+    //           <MenuIcon />
+    //         </IconButton>
+    //         {/* To do przeróbki */}
+    //         {isLoaded ? (
+    //           <Typography
+    //             component="h1"
+    //             variant="h6"
+    //             color="inherit"
+    //             noWrap
+    //             sx={{ flexGrow: 1 }}
+    //           >
+    //             Task details
+    //           </Typography>
+    //         ) : (
+    //           <Typography
+    //             component="h1"
+    //             variant="h6"
+    //             color="inherit"
+    //             noWrap
+    //             sx={{ flexGrow: 1 }}
+    //           >
+    //             Loading data...
+    //           </Typography>
+    //         )}
+    //       </Toolbar>
+    //     </AppBar>
+    //     <Drawer variant="permanent" open={open}>
+    //       <Toolbar
+    //         sx={{
+    //           display: "flex",
+    //           alignItems: "center",
+    //           justifyContent: "flex-end",
+    //           px: [1],
+    //         }}
+    //       >
+    //         <IconButton onClick={toggleDrawer}>
+    //           <ChevronLeftIcon />
+    //         </IconButton>
+    //       </Toolbar>
+    //       <Divider />
+    //       <List component="nav">
+    //         {mainListItems}
+    //         <Divider sx={{ my: 1 }} />
+    //         {secondaryListItems}
+    //       </List>
+    //     </Drawer>
+    //     <Box
+    //       component="main"
+    //       sx={{
+    //         flexGrow: 1,
+    //         height: "100vh",
+    //         overflow: "auto",
+    //       }}
+    //     >
+    //       <Toolbar />
+    //       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    //       {/* </Toolbar> */}
+    //     <Drawer variant="permanent" open={open}>
+    //       <Toolbar
+    //         sx={{
+    //           display: 'flex',
+    //           alignItems: 'center',
+    //           justifyContent: 'flex-end',
+    //           px: [1],
+    //         }}
+    //       >
+    //         <IconButton onClick={toggleDrawer}>
+    //           <ChevronLeftIcon />
+    //         </IconButton>
+    //       </Toolbar>
+    //       <Divider />
+    //       <List component="nav">
+    //         {mainListItems}
+    //         <Divider sx={{ my: 1 }} />
+    //         {secondaryListItems}
+    //       </List>
+    //     </Drawer>
+    //     <Box
+    //       component="main"
+    //       sx={{
+    //         flexGrow: 1,
+    //         height: '100vh',
+    //         overflow: 'auto',
+    //       }}
+    //     >
+    //       <Toolbar />
+    //       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    //         {isLoaded ? (
+    //           <div className="render-container">
+    //             {selectedComponent}
+    //           </div>
+    //         ) : (
+    //           <Typography>Loading...</Typography>
+    //         )}
+    //       </Container>
+    //     </Box>
+    //   </Box>
+    // </ThemeProvider>
   );
 }
