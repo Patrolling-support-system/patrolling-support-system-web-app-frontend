@@ -63,13 +63,13 @@ export function ViewTask() {
           id: doc.id,
           name: data.name,
           location: data.location,
-          start_date: data.start_date.toDate(),
+          startDate: data.startDate.toDate(),
         });
       });
       setTasks(fetchedTasks);
     }
   };
-  
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -84,7 +84,7 @@ export function ViewTask() {
       >
         <Toolbar>
           <IconButton onClick={() => handleReturnClick()}>
-            <ArrowBackIosIcon/>
+            <ArrowBackIosIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
@@ -94,30 +94,30 @@ export function ViewTask() {
             Current tasks
           </Typography>
           <Box sx={{ flexGrow: 1 }}>
-      <React.Fragment>
-      <div style={{ height: "600px", overflowY: "scroll" }}>
-          <Grid container spacing={2} alignItems="center">
-            {tasks.length > 0 ? (
-              tasks.map((task) => (
-              <Grid item key={task.id} xs={12} sm={12}>
-                <Card onClick={() => handleTaskClick(task.id)}>
-                  <CardContent>
-                    <Typography variant="h6">{task.name}</Typography>
-                    <Typography variant="body1">{task.location}</Typography>
-                    <Typography variant="body2">Start date: {moment(task.start_date).format('DD/MM/YYYY HH:mm')}</Typography>
-                  </CardContent>
-                </Card>
-            </Grid>
-              ))
-            ) : (
-              <p>Loading...</p>
-            )}
-            </Grid>
-        </div>
-      </React.Fragment>
-    </Box>
+            <React.Fragment>
+              <div style={{ height: "600px", overflowY: "scroll" }}>
+                <Grid container spacing={2} alignItems="center">
+                  {tasks.length > 0 ? (
+                    tasks.map((task) => (
+                      <Grid item key={task.id} xs={12} sm={12}>
+                        <Card onClick={() => handleTaskClick(task.id)}>
+                          <CardContent>
+                            <Typography variant="h6">{task.name}</Typography>
+                            <Typography variant="body1">{task.location}</Typography>
+                            <Typography variant="body2">Start date: {moment(task.startDate).format('DD/MM/YYYY HH:mm')}</Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                </Grid>
+              </div>
+            </React.Fragment>
+          </Box>
         </Paper>
       </Container>
     </ThemeProvider>
   );
-  }
+}
