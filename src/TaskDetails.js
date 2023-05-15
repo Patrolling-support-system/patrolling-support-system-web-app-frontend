@@ -144,6 +144,14 @@ export function TaskDetails() {
     getDocumentDetails();
   }, [signal]);
 
+  React.useEffect(() => {
+    if (documentData) {
+      setSelectedComponent(
+        <TaskDetailsComponent documentData={documentData} />
+      );
+    }
+  }, [documentData]);
+
   const [isLoaded, setIsLoaded] = React.useState(false);
 
   const [selectedComponent, setSelectedComponent] = React.useState(null);
@@ -195,6 +203,7 @@ export function TaskDetails() {
     </React.Fragment>
   );
 
+
   const secondaryListItems = (
     <React.Fragment>
       <ListItemButton onClick={() => handleReturnClick()}>
@@ -205,6 +214,7 @@ export function TaskDetails() {
       </ListItemButton>
     </React.Fragment>
   );
+
 
   return (
     <ThemeProvider theme={mdTheme}>
