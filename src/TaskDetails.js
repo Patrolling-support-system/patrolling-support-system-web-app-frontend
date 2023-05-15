@@ -29,7 +29,7 @@ import { doc, getDoc, getFirestore } from "firebase/firestore";
 import TaskDetailsComponent from "./Components/TaskDetailsComponent.js";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import MapIcon from "@mui/icons-material/Map";
-import CheckpointIcon from "@mui/icons-material/LocationOn"
+import CheckpointIcon from "@mui/icons-material/LocationOn";
 import ChatIcon from "@mui/icons-material/Chat";
 import { MapView } from "./LiveMap";
 import { CheckpointsView } from "./ChecpointsMap.js";
@@ -104,6 +104,8 @@ const ChatComponent = () => {
 export function TaskDetails() {
   const { taskId } = useParams();
   const [open, setOpen] = React.useState(true);
+  const [currentPage, setCurrentPage] = React.useState(null);
+  const [signal, setSignal] = React.useState({});
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -130,7 +132,7 @@ export function TaskDetails() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         // console.log("Document data:", docSnap.data());
-        setDocumentData(docSnap.data());
+        setDocumentData(Object.assign({}, docSnap.data()));
         setIsLoaded(true);
       } else {
         console.log("No such document!");
@@ -140,73 +142,56 @@ export function TaskDetails() {
 
   React.useEffect(() => {
     getDocumentDetails();
-    // if (documentData) {
-    //   setSelectedComponent(<TaskDetailsComponent documentData={documentData}/>);
-    // }
-  }, []);
-
-  React.useEffect(() => {
-    if (documentData) {
-      setSelectedComponent(
-        <TaskDetailsComponent documentData={documentData} />
-      );
-    }
-  }, [documentData]);
+  }, [signal]);
 
   const [isLoaded, setIsLoaded] = React.useState(false);
 
   const [selectedComponent, setSelectedComponent] = React.useState(null);
-  const handleItemClick = (component) => {
-    setSelectedComponent(component);
+
+  const mapPageToComponent = (page) => {
+    if (page === "details") {
+      return <TaskDetailsComponent documentData={documentData} />;
+    } else if (page === "map") {
+      return <MapView documentData={documentData} />;
+    } else if (page === "checkpoints") {
+      return (
+        <CheckpointsView documentData={documentData} setSignal={setSignal} />
+      );
+    } else if (page === "chat") {
+      return <div>Madzia</div>;
+    }
   };
+
+  React.useEffect(() => {
+    setSelectedComponent(mapPageToComponent(currentPage));
+  }, [currentPage, documentData]);
 
   const mainListItems = (
     <React.Fragment>
-      <ListItemButton
-        onClick={() =>
-          handleItemClick(<TaskDetailsComponent documentData={documentData} />)
-        }
-      >
+      <ListItemButton onClick={() => setCurrentPage("details")}>
         <ListItemIcon>
           <ListAltIcon />
         </ListItemIcon>
         <ListItemText primary="Task details" />
       </ListItemButton>
-      <ListItemButton
-        onClick={() => handleItemClick(<MapView documentData={documentData} />)}
-      >
+      <ListItemButton onClick={() => setCurrentPage("map")}>
         <ListItemIcon>
           <MapIcon />
         </ListItemIcon>
         <ListItemText primary="View map" />
       </ListItemButton>
-      <ListItemButton
-        onClick={() =>
-          handleItemClick(<CheckpointsView documentData={documentData} />)
-        }
-      >
+      <ListItemButton onClick={() => setCurrentPage("checkpoints")}>
         <ListItemIcon>
           <CheckpointIcon />
         </ListItemIcon>
         <ListItemText primary="Checkpoints" />
       </ListItemButton>
-      <ListItemButton onClick={() => handleItemClick(ChatComponent)}>
+      <ListItemButton onClick={() => setCurrentPage("chat")}>
         <ListItemIcon>
           <ChatIcon />
         </ListItemIcon>
         <ListItemText primary="Patrol group chat" />
       </ListItemButton>
-      {/* <List>
-          {menuItems.map(item => (
-            <ListItem
-              key={item.id}
-              button
-              onClick={() => handleItemClick(item.id)}
-            >
-              <ListItemText primary={item.label} />
-            </ListItem>
-          ))}  
-        </List> */}
     </React.Fragment>
   );
 
@@ -222,10 +207,6 @@ export function TaskDetails() {
   );
 
   return (
-    // <div className="App">
-    //     taskId: {taskId}
-    // </div>
-
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
@@ -268,25 +249,6 @@ export function TaskDetails() {
                 Loading data...
               </Typography>
             )}
-            {/* <IconButton color="inherit">
-                <Badge badgeContent={4} color="secondary">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton> */}
-            {/* <IconButton color="inherit"  onClick={() => handleReturnClick()}>
-                <Typography
-                      component="h1"
-                      variant="h6"
-                      color="inherit"
-                      noWrap
-                      sx={{ flexGrow: 1, marginRight: '4px'}}
-                    >
-                      Return
-                  </Typography>
-                  <Badge>
-                  <ExitToAppIcon />
-                </Badge>
-              </IconButton> */}
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -320,7 +282,9 @@ export function TaskDetails() {
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             {isLoaded ? (
-              <div className="render-container">{selectedComponent}</div>
+              <div className="render-container">
+                {documentData !== null ? selectedComponent : null}
+              </div>
             ) : (
               <Typography>Loading...</Typography>
             )}
