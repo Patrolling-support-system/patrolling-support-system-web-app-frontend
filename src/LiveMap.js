@@ -8,6 +8,7 @@ import {
 import * as React from "react";
 import { auth } from "./firebase-config.js";
 import { collection, getDocs, getFirestore } from "firebase/firestore";
+import { Paper, Typography } from "@mui/material";
 
 let url = "http://maps.google.com/mapfiles/ms/icons/green.png";
 
@@ -67,56 +68,60 @@ export function MapView({ documentData }) {
 
   return (
     <div>
-      <h4>{documentData.name}</h4>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        zoom={13}
-        center={center}
-      >
-        {documentData.checkpoints?.map((checkpoint, index) => {
-          var marker = (
-            <Marker
-              icon={{ url: url }}
+      <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
+        <Typography sx={{ textAlign: 'center', fontSize: '2rem' }}>
+          {documentData.name}
+        </Typography>
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          zoom={13}
+          center={center}
+        >
+          {documentData.checkpoints?.map((checkpoint, index) => {
+            var marker = (
+              <Marker
+                icon={{ url: url }}
+                key={index}
+                position={{
+                  lat: Number.parseFloat(checkpoint._lat),
+                  lng: Number.parseFloat(checkpoint._long),
+                }}
+                opacity={0.9}
+                label={index.toString()}
+              />
+            );
+            return marker;
+          })}
+
+          {patrolRouteData.map((patrolRoute, index) => (
+            <Polyline
               key={index}
-              position={{
-                lat: Number.parseFloat(checkpoint._lat),
-                lng: Number.parseFloat(checkpoint._long),
-              }}
-              opacity={0.9}
-              label={index.toString()}
+              path={patrolRoute.route.map(
+                (route) => new window.google.maps.LatLng(route._lat, route._long)
+              )}
+              options={{ strokeColor: randomColor(index) }}
             />
-          );
-          return marker;
-        })}
+          ))}
 
-        {patrolRouteData.map((patrolRoute, index) => (
-          <Polyline
-            key={index}
-            path={patrolRoute.route.map(
-              (route) => new window.google.maps.LatLng(route._lat, route._long)
-            )}
-            options={{ strokeColor: randomColor(index) }}
-          />
-        ))}
-
-        {patrolRouteData.map((patrolRoute, index) => (
-          <Marker
-            key={index}
-            icon={{
-              path: window.google.maps.SymbolPath.CIRCLE,
-              fillColor: randomColor(index),
-              fillOpacity: 1,
-              scale: 6,
-              strokeColor: randomColor(index),
-              strokeWeight: 0.5,
-            }}
-            position={{
-              lat: patrolRoute.route[patrolRoute.route.length - 1]._lat,
-              lng: patrolRoute.route[patrolRoute.route.length - 1]._long,
-            }}
-          />
-        ))}
-      </GoogleMap>
+          {patrolRouteData.map((patrolRoute, index) => (
+            <Marker
+              key={index}
+              icon={{
+                path: window.google.maps.SymbolPath.CIRCLE,
+                fillColor: randomColor(index),
+                fillOpacity: 1,
+                scale: 6,
+                strokeColor: randomColor(index),
+                strokeWeight: 0.5,
+              }}
+              position={{
+                lat: patrolRoute.route[patrolRoute.route.length - 1]._lat,
+                lng: patrolRoute.route[patrolRoute.route.length - 1]._long,
+              }}
+            />
+          ))}
+        </GoogleMap>
+      </Paper>
     </div>
   );
 }

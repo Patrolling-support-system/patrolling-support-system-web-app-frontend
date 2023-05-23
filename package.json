@@ -6,6 +6,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@googlemaps/js-api-loader": "^1.15.1",
+    "@material-ui/styles": "^4.11.5",
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.15",
     "@mui/x-data-grid": "^6.0.4",
