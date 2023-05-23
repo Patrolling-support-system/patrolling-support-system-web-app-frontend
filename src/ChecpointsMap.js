@@ -6,6 +6,14 @@ import { Button, Paper } from "@mui/material";
 import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
 import { Box } from "@mui/material";
 import { Loader } from "@googlemaps/js-api-loader";
+import {
+  getFirestore,
+  doc,
+  updateDoc,
+  arrayUnion,
+  GeoPoint,
+} from "firebase/firestore";
+import { useParams } from "react-router-dom";
 
 const loader = new Loader({
   apiKey: "AIzaSyBRx2VHwF6GZaONNSYekgsUTRZ6vrMN1FA",
@@ -25,8 +33,11 @@ const center = {
 
 let url = "http://maps.google.com/mapfiles/ms/icons/green.png";
 
-export function CheckpointsView({ documentData }) {
+export function CheckpointsView({ documentData, setSignal }) {
   const [disabled, setDisabled] = useState(true);
+  const [enabledMap, setEnabledMap] = useState(false);
+  const [newMarker, setNewMarker] = useState(null);
+  const { taskId } = useParams();
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: "AIzaSyBRx2VHwF6GZaONNSYekgsUTRZ6vrMN1FA",
@@ -35,84 +46,138 @@ export function CheckpointsView({ documentData }) {
   if (loadError) return "Error loading maps";
   if (!isLoaded) return "Loading maps";
 
-  const handleAddCheckpointsClick = () => { };
+  const disableMapAndSaveCheckpoint = async () => {
+    setEnabledMap(false);
+
+    const database = getFirestore();
+    const docRef = doc(database, "Tasks", taskId);
+
+    updateDoc(docRef, {
+      checkpoints: arrayUnion(new GeoPoint(newMarker._lat, newMarker._long)),
+    }).then(() => {
+      console.log("Zmodyfikowano pomyślnie");
+      setNewMarker(null);
+      setSignal({});
+    });
+  };
 
   return (
     <React.Fragment>
-      <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
-        <Box display="flex" justifyContent="space-between" marginTop={"2vh"}>
-          <Grid>
-            <Typography variant="h6" gutterBottom>
-              Checkpoints:
-            </Typography>
-            <Grid container spacing={1}>
-              {documentData.checkpoints?.map((checkpoint, index) => {
-                var field = (
-                  <Grid item xs={12} sm={10}>
-                    <TextField
-                      variant="outlined"
-                      margin="normal"
-                      width="auto"
-                      rows={1}
-                      value={`${index}: ${checkpoint._lat}, ${checkpoint._long}`}
-                      disabled={disabled}
-                      sx={{
-                        "& .MuiInputBase-input.Mui-disabled": {
-                          WebkitTextFillColor: "#000000",
-                        },
-                      }}
-                    />
-                  </Grid>
-                );
-                return field;
-              })}
+      <Box display="flex" justifyContent="space-between" marginTop={"2vh"}>
+        <Grid>
+          <Typography variant="h6" gutterBottom>
+            Checkpoints:
+          </Typography>
+          <Grid container spacing={1}>
+            {/* checkpoints data  */}
+            {documentData.checkpoints?.map((checkpoint, index) => {
+              var field = (
+                <Grid item xs={12} sm={10}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    width="auto"
+                    rows={1}
+                    value={`${index}: ${checkpoint._lat}, ${checkpoint._long}`}
+                    disabled={disabled}
+                    sx={{
+                      "& .MuiInputBase-input.Mui-disabled": {
+                        WebkitTextFillColor: "#000000",
+                      },
+                    }}
+                  />
+                </Grid>
+              );
+              return field;
+            })}
+            {/* // added checkpoints data  */}
+            {newMarker !== null ? (
+              <Grid item xs={12} sm={10}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  width="auto"
+                  rows={1}
+                  value={`N: ${newMarker._lat.toFixed(
+                    6
+                  )}, ${newMarker._long.toFixed(6)}`}
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
+                />
+              </Grid>
+            ) : null}
+            <Grid>
               <Button
                 variant="contained"
-                size="large"
-                style={{
-                  marginTop: "20px",
-                  marginLeft: "10px",
-                }}
-                onClick={() => setDisabled(true)}
-              >
-                Edit checkpoints
-              </Button>
-              <Button
-                variant="contained"
-                size="large"
+                size="small"
                 style={{
                   marginTop: "20px",
                   marginLeft: "20px",
                 }}
-                onClick={() => handleAddCheckpointsClick()}
+                onClick={() => setEnabledMap(true)}
               >
-                Add checkpoint
+                Add
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                style={{
+                  marginTop: "20px",
+                  marginLeft: "20px",
+                }}
+                disabled={newMarker === null}
+                onClick={() => disableMapAndSaveCheckpoint()}
+              >
+                Save
               </Button>
             </Grid>
           </Grid>
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            zoom={13}
-            center={center}
-          >
-            {documentData.checkpoints?.map((checkpoint, index) => {
-              var marker = (
-                <Marker
-                  icon={{ url: url }}
-                  key={index}
-                  position={{
-                    lat: Number.parseFloat(checkpoint._lat),
-                    lng: Number.parseFloat(checkpoint._long),
-                  }}
-                  opacity={0.9}
-                  label={index.toString()}
-                />
-              );
-              return marker;
-            })}
-          </GoogleMap>
-        </Box>
-      </Paper>
+        </Grid>
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          zoom={13}
+          center={center}
+          onClick={(event) => {
+            if (enabledMap) {
+              setNewMarker({
+                _lat: parseFloat(event.latLng.lat().toFixed(6)),
+                _long: parseFloat(event.latLng.lng().toFixed(6)),
+              });
+            }
+          }}
+        >
+          {/* // checkpoints on map*/}
+          {documentData.checkpoints?.map((checkpoint, index) => {
+            var marker = (
+              <Marker
+                icon={{ url: url }}
+                key={index}
+                position={{
+                  lat: Number.parseFloat(checkpoint._lat),
+                  lng: Number.parseFloat(checkpoint._long),
+                }}
+                opacity={0.9}
+                label={index.toString()}
+              />
+            );
+            return marker;
+          })}
+          {/* // added checkpoint on map*/}
+          {newMarker !== null ? (
+            <Marker
+              icon={{ url: url }}
+              position={{
+                lat: newMarker._lat,
+                lng: newMarker._long,
+              }}
+              opacity={0.9}
+            />
+          ) : null}
+        </GoogleMap>
+      </Box>
     </React.Fragment>
   );
 }
