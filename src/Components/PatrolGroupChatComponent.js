@@ -167,11 +167,6 @@ const PatrolGroupChatComponent = ({ documentData }) => {
     <div>
       <React.Fragment>
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, position: 'relative' }}>
-          <Grid>
-            <Grid item xs={12} >
-              <Typography variant="h5" className="header-message">Chat</Typography>
-            </Grid>
-          </Grid>
           {isLoaded ? (
             <Grid container component={Paper}>
               <Grid item xs={2}>

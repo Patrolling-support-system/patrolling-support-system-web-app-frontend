@@ -28,6 +28,10 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
+import { collection, getDocs, getFirestore, where } from 'firebase/firestore';
+import { query } from 'firebase/database';
+import { ListItem } from '@mui/material';
+import moment from 'moment';
 
 
 
@@ -101,6 +105,8 @@ function HomeContent() {
     setOpen(!open);
   };
 
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -130,14 +136,61 @@ function HomeContent() {
       navigate("/"));
   }
 
+  const [ongoingTasks, setOngoingTasks] = React.useState([]);
+
+  const [upcomingTasks, setUpcomingTasks] = React.useState([]);
+
+  const [finishedTasks, setFinishedTasks] = React.useState([]);
+
+  const getAndSortTasks = async () => {
+    const currentUser = await new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        unsubscribe();
+        resolve(user.uid);
+      });
+    });
+    if (auth.currentUser) {
+      const database = getFirestore();
+      const collectionRef = collection(database, 'Tasks');
+      const documentQuery = query(collectionRef, where("coordinator", '==', currentUser));
+      const querySnapshot = await getDocs(documentQuery)
+      const taskList = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const task = {
+          id: doc.id,
+          name: data.name,
+          location: data.location,
+          startDate: data.startDate.toDate(),
+          endDate: data.endDate.toDate()
+        };
+        taskList.push(task);
+      });
+      const currentTasks = taskList.filter(task => Date.now() >= task.startDate && Date.now() <= task.endDate);
+      setOngoingTasks(currentTasks);
+      const futureTasks = taskList.filter(task => Date.now() < task.startDate);
+      setUpcomingTasks(futureTasks);
+      const pastTasks = taskList.filter(task => Date.now() > task.endDate);
+      setFinishedTasks(pastTasks)
+
+      setIsLoaded(true)
+    }
+  }
+
+  const handleTaskButtonClick = (taskId) => {
+    navigate(`/viewTasks/${taskId}`);
+  }
+
+  React.useEffect(() => {
+    getAndSortTasks()
+  }, []);
+
+  // React.useEffect(() => {
+  //   setIsLoaded(true)
+  // }, [ongoingTasks, upcomingTasks, finishedTasks]);
+
   const mainListItems = (
     <React.Fragment>
-      {/* <ListItemButton>
-        <ListItemIcon>
-          <DashboardIcon />
-        </ListItemIcon>
-        <ListItemText primary="Dashboard" />
-      </ListItemButton> */}
       <ListItemButton onClick={() => handleNewTaskClick()}>
         <ListItemIcon>
           <AddIcon />
@@ -148,7 +201,7 @@ function HomeContent() {
         <ListItemIcon>
           <ListAltIcon />
         </ListItemIcon>
-        <ListItemText primary="View tasks" />
+        <ListItemText primary="View all tasks" />
       </ListItemButton>
       <ListItemButton onClick={() => handleAccountSettingsClick()}>
         <ListItemIcon>
@@ -158,6 +211,7 @@ function HomeContent() {
       </ListItemButton>
     </React.Fragment>
   );
+
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -235,10 +289,6 @@ function HomeContent() {
         <Box
           component="main"
           sx={{
-            // backgroundColor: (theme) =>
-            //   theme.palette.mode === 'light'
-            //     ? theme.palette.grey[100]
-            //     : theme.palette.grey[900],
             flexGrow: 1,
             height: '100vh',
             overflow: 'auto',
@@ -247,9 +297,103 @@ function HomeContent() {
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             {/* Tutaj idzie zawartośc strony */}
-            {/* <Typography>
-              Current user: {auth.currentUser.email}
-            </Typography> */}
+            {isLoaded ? (
+              <Grid container spacing={3}>
+                <Grid item xs={4} md={4} lg={4}>
+                  <Paper
+                    sx={{
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: 750,
+                    }}
+                  >
+                    <Typography variant="h6">
+                      Ongoing tasks:
+                    </Typography>
+                    <Divider orientation='horizontal' />
+                    <List sx={{ overflow: 'auto', maxHeight: 750 }}>
+                      {ongoingTasks.map((item, index) => (
+                        <React.Fragment key={index}>
+                          <ListItem button onClick={() => handleTaskButtonClick(item.id)} sx={{ height: 'fit-content', py: 2 }}>
+                            <ListItemText>
+                              <Typography variant="h6" noWrap>{item.name}</Typography>
+                              <Typography variant="body1" noWrap>{item.location}</Typography>
+                              <Typography variant="body2" noWrap>Start date: {moment(item.startDate).format('DD/MM/YYYY HH:mm')}</Typography>
+                            </ListItemText>
+                          </ListItem>
+                          <Divider orientation='horizontal' />
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </Paper>
+                </Grid>
+                {/* Recent Deposits */}
+                <Grid item xs={4} md={4} lg={4}>
+                  <Paper
+                    sx={{
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: 750,
+                    }}
+                  >
+                    <Typography variant="h6">
+                      Upcoming tasks:
+                    </Typography>
+                    <Divider orientation='horizontal' />
+                    <List sx={{ overflow: 'auto', maxHeight: 750 }}>
+                      {upcomingTasks.map((item, index) => (
+                        <React.Fragment key={index}>
+                          <ListItem button onClick={() => handleTaskButtonClick(item.id)} sx={{ height: 'fit-content', py: 2 }}>
+                            <ListItemText>
+                              <Typography variant="h6" noWrap>{item.name}</Typography>
+                              <Typography variant="body1" noWrap>{item.location}</Typography>
+                              <Typography variant="body2" noWrap>Start date: {moment(item.startDate).format('DD/MM/YYYY HH:mm')}</Typography>
+                            </ListItemText>
+                          </ListItem>
+                          <Divider orientation='horizontal' />
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </Paper>
+                </Grid>
+                {/* Recent Orders */}
+                <Grid item xs={4} md={4} lg={4}>
+                  <Paper
+                    sx={{
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: 750,
+                    }}>
+                    <Typography variant="h6">
+                      Completed tasks:
+                    </Typography>
+                    <Divider orientation='horizontal' />
+                    <List sx={{ overflow: 'auto', maxHeight: 750 }}>
+                      {finishedTasks.map((item, index) => (
+                        <React.Fragment key={index}>
+                          <ListItem button onClick={() => handleTaskButtonClick(item.id)} sx={{ height: 'fit-content', py: 2 }}>
+                            <ListItemText>
+                              <Typography variant="h6" noWrap>{item.name}</Typography>
+                              <Typography variant="body1" noWrap>{item.location}</Typography>
+                              <Typography variant="body2" noWrap>Start date: {moment(item.startDate).format('DD/MM/YYYY HH:mm')}</Typography>
+                            </ListItemText>
+                          </ListItem>
+                          <Divider orientation='horizontal' />
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </Paper>
+                </Grid>
+              </Grid>
+            ) : (
+              <Typography>
+                Loading...
+              </Typography>
+            )}
+            {/* </Grid> */}
           </Container>
         </Box>
       </Box>

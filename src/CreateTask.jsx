@@ -260,6 +260,11 @@ export function CreateTask() {
                   rows={1}
                   value={taskName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -274,6 +279,11 @@ export function CreateTask() {
                   rows={1}
                   value={locationName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -288,6 +298,11 @@ export function CreateTask() {
                   rows={2}
                   value={participantList.map(participant => participant.name + ' ' + participant.surname).join(', ')}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -330,6 +345,11 @@ export function CreateTask() {
                   rows={4}
                   value={taskDescription}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
             </Grid>

@@ -34,6 +34,8 @@ import ChatIcon from "@mui/icons-material/Chat";
 import { MapView } from "./LiveMap";
 import { CheckpointsView } from "./ChecpointsMap.js";
 import PatrolGroupChatComponent from "./Components/PatrolGroupChatComponent.js"
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import { SubtaskComponent } from "./Components/SubtaskComponent.js";
 
 const drawerWidth = 240;
 
@@ -101,7 +103,7 @@ const mdTheme = createTheme({
 export function TaskDetails() {
   const { taskId } = useParams();
   const [open, setOpen] = React.useState(true);
-  const [currentPage, setCurrentPage] = React.useState(null);
+  const [currentPage, setCurrentPage] = React.useState("");
   const [signal, setSignal] = React.useState({});
   const toggleDrawer = () => {
     setOpen(!open);
@@ -146,6 +148,8 @@ export function TaskDetails() {
       setSelectedComponent(
         <TaskDetailsComponent documentData={documentData} />
       );
+      // Tutaj do rozważenia czy warto się z tym babrać i naprawiać
+      // setCurrentPage("details")
     }
   }, [documentData]);
 
@@ -163,7 +167,9 @@ export function TaskDetails() {
         <CheckpointsView documentData={documentData} setSignal={setSignal} />
       );
     } else if (page === "chat") {
-      return <PatrolGroupChatComponent documentData={documentData}/>;
+      return <PatrolGroupChatComponent documentData={documentData} />;
+    } else if (page === "subtasks") {
+      return <SubtaskComponent documentData={documentData} />;
     }
   };
 
@@ -191,11 +197,13 @@ export function TaskDetails() {
         </ListItemIcon>
         <ListItemText primary="Checkpoints" />
       </ListItemButton>
+      <ListItemButton onClick={() => setCurrentPage("subtasks")}>
+        <ListItemIcon>
+          <AssignmentIcon/>
+        </ListItemIcon>
+        <ListItemText primary="Subtasks" />
+      </ListItemButton>
       <ListItemButton onClick={() => setCurrentPage("chat")}>
-        {/* <ListItemButton
-        onClick={() =>
-          handleItemClick(<PatrolGroupChatComponent documentData={documentData} />)
-        }> */}
         <ListItemIcon>
           <ChatIcon />
         </ListItemIcon>
@@ -301,122 +309,5 @@ export function TaskDetails() {
         </Box>
       </Box>
     </ThemeProvider>
-    // <ThemeProvider theme={mdTheme}>
-    //   <Box sx={{ display: 'flex' }}>
-    //     <CssBaseline />
-    //     <AppBar position="absolute" open={open}>
-    //       <Toolbar
-    //         sx={{
-    //           pr: '24px',
-    //         }}
-    //       >
-    //         <IconButton
-    //           edge="start"
-    //           color="inherit"
-    //           aria-label="open drawer"
-    //           onClick={toggleDrawer}
-    //           sx={{
-    //             marginRight: '36px',
-    //             ...(open && { display: 'none' }),
-    //           }}
-    //         >
-    //           <MenuIcon />
-    //         </IconButton>
-    //         {/* To do przeróbki */}
-    //         {isLoaded ? (
-    //           <Typography
-    //             component="h1"
-    //             variant="h6"
-    //             color="inherit"
-    //             noWrap
-    //             sx={{ flexGrow: 1 }}
-    //           >
-    //             Task details
-    //           </Typography>
-    //         ) : (
-    //           <Typography
-    //             component="h1"
-    //             variant="h6"
-    //             color="inherit"
-    //             noWrap
-    //             sx={{ flexGrow: 1 }}
-    //           >
-    //             Loading data...
-    //           </Typography>
-    //         )}
-    //       </Toolbar>
-    //     </AppBar>
-    //     <Drawer variant="permanent" open={open}>
-    //       <Toolbar
-    //         sx={{
-    //           display: "flex",
-    //           alignItems: "center",
-    //           justifyContent: "flex-end",
-    //           px: [1],
-    //         }}
-    //       >
-    //         <IconButton onClick={toggleDrawer}>
-    //           <ChevronLeftIcon />
-    //         </IconButton>
-    //       </Toolbar>
-    //       <Divider />
-    //       <List component="nav">
-    //         {mainListItems}
-    //         <Divider sx={{ my: 1 }} />
-    //         {secondaryListItems}
-    //       </List>
-    //     </Drawer>
-    //     <Box
-    //       component="main"
-    //       sx={{
-    //         flexGrow: 1,
-    //         height: "100vh",
-    //         overflow: "auto",
-    //       }}
-    //     >
-    //       <Toolbar />
-    //       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-    //       {/* </Toolbar> */}
-    //     <Drawer variant="permanent" open={open}>
-    //       <Toolbar
-    //         sx={{
-    //           display: 'flex',
-    //           alignItems: 'center',
-    //           justifyContent: 'flex-end',
-    //           px: [1],
-    //         }}
-    //       >
-    //         <IconButton onClick={toggleDrawer}>
-    //           <ChevronLeftIcon />
-    //         </IconButton>
-    //       </Toolbar>
-    //       <Divider />
-    //       <List component="nav">
-    //         {mainListItems}
-    //         <Divider sx={{ my: 1 }} />
-    //         {secondaryListItems}
-    //       </List>
-    //     </Drawer>
-    //     <Box
-    //       component="main"
-    //       sx={{
-    //         flexGrow: 1,
-    //         height: '100vh',
-    //         overflow: 'auto',
-    //       }}
-    //     >
-    //       <Toolbar />
-    //       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-    //         {isLoaded ? (
-    //           <div className="render-container">
-    //             {selectedComponent}
-    //           </div>
-    //         ) : (
-    //           <Typography>Loading...</Typography>
-    //         )}
-    //       </Container>
-    //     </Box>
-    //   </Box>
-    // </ThemeProvider>
   );
 }
