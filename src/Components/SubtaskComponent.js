@@ -3,11 +3,12 @@ import * as React from "react";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Grid, IconButton, InputLabel, List, ListItem, ListItemText, MenuItem, Paper, Select, TextField, Typography } from "@mui/material";
 import { auth } from "../firebase-config.js";
-import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, documentId, getDoc, getDocs, getFirestore, where } from "firebase/firestore";
 import { query } from "firebase/database";
 import { CheckBox } from "@mui/icons-material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { getDownloadURL, getStorage, ref } from "firebase/storage";
 
 
 const mdTheme = createTheme({
@@ -46,15 +47,84 @@ export const SubtaskComponent = ({ documentData }) => {
     setOpen(false);
   };
 
+  const [openDeleteConfirm, setOpenDeleteConfirm] = React.useState(false);
+  const [subtaskToBeDeleted, setSubtaskToBeDeleted] = React.useState("");
+
+  // Opens the delete subtask dialog
+  const handleDeleteConfirmClickOpen = (subtaskId) => {
+    setSubtaskToBeDeleted(subtaskId);
+    checkIfSubtaskContainsReport(subtaskId)
+    setOpenDeleteConfirm(true);
+  };
+
+  // Closes the delete subtask dialog
+  const handleDeleteConfirmClose = () => {
+    setOpenDeleteConfirm(false);
+  };
+
+  // Handles the deletion of a subtask
+  const handleSubtaskDeleteClick = () => {
+    setOpenDeleteConfirm(false);
+    deleteSubtaskFromFirestore();
+    setIsLoaded(false)
+    getSubtasksFromFirestore(selectedCheckboxIndex);
+  }
+
+  // Handles the add subtask button
   const handleAddSubtask = () => {
-    addSubtaskToFireCheckpoint();
+    addSubtaskToCheckpoint();
     setOpen(false);
-    setSelectedParticipant(null);
+    setSelectedParticipant('');
     setSubtaskName('');
     setSubtaskDescription('');
     setIsLoaded(false)
     getSubtasksFromFirestore(selectedCheckboxIndex);
   };
+
+  // Open reports dialog
+
+  const [openReportDialog, setOpenReportDialog] = React.useState(false);
+  const [filesLoaded, setFilesLoaded] = React.useState(false);
+  const [containsReport, setContainsReport] = React.useState(false);
+  const [selectedSubtaskReports, setSelectedSubtaskReports] = React.useState([]);
+  const [selectedImage, setSelectedImage] = React.useState("");
+  const [selectedAudio, setSelectedAudio] = React.useState("");
+
+  const handleOpenSubtaskReports = (subtaskId) => {
+    checkIfSubtaskContainsReport(subtaskId);
+    getSubtaskReportDataFromFirestore(subtaskId);
+    setOpenReportDialog(true);
+  };
+
+  const handleCloseSubtaskReports = () => {
+    setOpenReportDialog(false);
+    setFilesLoaded(false);
+    setSelectedImage("");
+  };
+
+  // const handleImageSelectionChange = (event) => {
+  //   setSelectedImage(event.target.value);
+  // };
+  const handleImageSelectionChange = () => {
+    setSelectedImage("");
+  };
+
+  // const handleAudioSelectionChange = (event) => {
+  //   setSelectedAudio(event.target.value);
+  // };
+  const handleAudioSelectionChange = () => {
+    setSelectedAudio("");
+  };
+
+  const handleImageFileClick = (index) => {
+    getFileFromFirebaseStorage(index, "image")
+  }
+
+  const handleAudioFileClick = (index) => {
+    getFileFromFirebaseStorage(index, "audio")
+  }
+
+  // -----------------------------------------------------
 
   const [subtaskName, setSubtaskName] = React.useState("");
   const handleSubtaskNameChange = (event) => {
@@ -83,7 +153,44 @@ export const SubtaskComponent = ({ documentData }) => {
     getSubtasksFromFirestore(checkpointIndex);
   };
 
-  const addSubtaskToFireCheckpoint = async () => {
+  const getFileFromFirebaseStorage = async (index, fileType) => {
+    const storage = getStorage();
+    let spaceRef;
+
+    if (fileType === "image") {
+      spaceRef = ref(storage, selectedSubtaskReports.images[index]);
+      getDownloadURL(spaceRef)
+        .then((url) => {
+          window.open(url, '_blank')
+        }).catch((error) => {
+          console.log("Error downloading image", error);
+        })
+    } else if (fileType === "audio") {
+      spaceRef = ref(storage, selectedSubtaskReports.recordings[index]);
+      getDownloadURL(spaceRef)
+        .then((url) => {
+          const audioWindow = window.open('', '_blank');
+          audioWindow.document.write(`
+        <html>
+          <head>
+            <title>Audio Player</title>
+          </head>
+          <body>
+            <audio controls autoplay>
+              <source src="${url}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          </body>
+        </html>
+      `);
+        })
+        .catch((error) => {
+          console.log("Error downloading audio:", error);
+        })
+    }
+  }
+
+  const addSubtaskToCheckpoint = async () => {
     if (auth.currentUser) {
       const checkpointIndex = parsedGeopoints.indexOf(selectedCheckpoint);
       const checkpoint = documentData.checkpoints[checkpointIndex];
@@ -100,6 +207,62 @@ export const SubtaskComponent = ({ documentData }) => {
       // console.log("Added new document with ID: ", docRef.id);
     }
   };
+
+  const getSubtaskReportDataFromFirestore = async (subtaskId) => {
+    const database = getFirestore();
+    const reportRef = collection(database, "CheckpointReport");
+    const reportQuery = query(reportRef, where("subtaskId", "==", subtaskId));
+    const reportSnapshot = await getDocs(reportQuery);
+
+    const dataArray = reportSnapshot.docs.map((doc) => doc.data());
+
+    if (!dataArray.empty && containsReport === true) {
+      const subtaskReportData = dataArray[0];
+
+      const updatedsubtaskReportData = {
+        ...subtaskReportData,
+        imageFileNames: subtaskReportData.images.map((path) => {
+          const pathSegments = path.split('/');
+          const fileName = pathSegments[pathSegments.length - 1];
+          return fileName;
+        }),
+        recordingFileNames: subtaskReportData.recordings.map((path) => {
+          const pathSegments = path.split('/');
+          const fileName = pathSegments[pathSegments.length - 1];
+          return fileName;
+        }),
+      }
+
+      // console.log(updatedsubtaskReportData);
+      setSelectedSubtaskReports(updatedsubtaskReportData);
+      setFilesLoaded(true);
+    } else {
+      console.log("No reports for this subtask");
+    }
+  }
+
+  const checkIfSubtaskContainsReport = async (subtaskId) => {
+    const database = getFirestore();
+    const reportRef = collection(database, "CheckpointReport");
+    const reportQuery = query(reportRef, where("subtaskId", "==", subtaskId));
+    const reportSnapshot = await getDocs(reportQuery);
+
+    if (!reportSnapshot.empty) {
+      setContainsReport(true);
+    } else {
+      setContainsReport(false);
+    }
+  }
+
+  const deleteSubtaskFromFirestore = async () => {
+    try {
+      const database = getFirestore();
+      const subTaskRef = doc(database, "CheckpointSubtasks", subtaskToBeDeleted);
+      await deleteDoc(subTaskRef);
+    } catch (error) {
+      console.log("Error deleting document: ", error);
+    }
+  }
 
   const getParticipantNamesFromFirestore = async (subtaskList) => {
     const database = getFirestore();
@@ -140,6 +303,7 @@ export const SubtaskComponent = ({ documentData }) => {
     subtaskSnapshot.forEach((doc) => {
       const data = doc.data();
       const subtask = {
+        id: doc.id,
         subtaskName: data.subtaskName,
         description: data.description,
         participant: data.participant
@@ -162,13 +326,13 @@ export const SubtaskComponent = ({ documentData }) => {
   React.useEffect(() => {
     if (documentData.checkpoints[0] !== null) {
       setSelectedCheckpoint(parsedGeopoints[0]);
+      setSelectedCheckboxIndex(0);
       getSubtasksFromFirestore(0);
     }
   }, [parsedGeopoints])
 
 
   // ------------------------------------------------------------------------------------------------------
-
 
   return (
     <React.Fragment>
@@ -215,7 +379,6 @@ export const SubtaskComponent = ({ documentData }) => {
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    {/* <Divider orientation='horizontal' /> */}
                     <InputLabel id="participant-label" shrink={selectedParticipant !== ''}>
                       Choose subtask participant:
                     </InputLabel>
@@ -223,7 +386,6 @@ export const SubtaskComponent = ({ documentData }) => {
                       value={selectedParticipant}
                       onChange={handleParticipantChange}
                       fullWidth
-                    // label={"Choose subtask participant"}
                     >
                       {patrolParticipants.map((item, index) => (
                         <MenuItem key={index} value={item.userId}>
@@ -239,6 +401,121 @@ export const SubtaskComponent = ({ documentData }) => {
                   Add subtask
                 </Button>
                 <Button onClick={handleClose}>
+                  Cancel
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <Dialog open={openDeleteConfirm} onClose={handleDeleteConfirmClose}>
+              {containsReport ? (
+                <React.Fragment>
+                  <DialogTitle>
+                    Cannot delete subtask with assigned report or file
+                  </DialogTitle>
+                  <DialogActions>
+                    <Button onClick={handleDeleteConfirmClose}>
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </React.Fragment>
+
+              ) : (
+                <React.Fragment>
+                  <DialogTitle>
+                    Are you sure you want to delete this subtask?
+                  </DialogTitle>
+                  <DialogActions>
+                    <Button onClick={handleSubtaskDeleteClick} variant="contained">
+                      Confirm
+                    </Button>
+                    <Button onClick={handleDeleteConfirmClose}>
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </React.Fragment>
+              )}
+            </Dialog>
+            {/* Dialog który obsługuje otwieranie raportów dla danego subtaska */}
+            <Dialog open={openReportDialog} onClose={handleCloseSubtaskReports}>
+              <DialogTitle>
+                Reports assgined to this subtask:
+              </DialogTitle>
+              <DialogContent style={{ minWidth: 600, minHeight: 350 }}>
+                {containsReport ? (
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <InputLabel>
+                        Subtask report note:
+                      </InputLabel>
+                      <TextField
+                        variant='outlined'
+                        margin="normal"
+                        fullWidth
+                        multiline
+                        rows={2}
+                        value={selectedSubtaskReports.note}
+                        disabled
+                        sx={{
+                          "& .MuiInputBase-input.Mui-disabled": {
+                            WebkitTextFillColor: "#000000",
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <InputLabel>
+                        Subtask images:
+                      </InputLabel>
+                      {filesLoaded ? (
+                        <Select
+                          value={selectedImage}
+                          onChange={handleImageSelectionChange}
+                          fullWidth
+                        >
+                          {selectedSubtaskReports.imageFileNames.map((item, index) => (
+                            <MenuItem key={index} value={item} onClick={() => handleImageFileClick(index)}>
+                              {item}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      ) : (
+                        <Typography>
+                          Loading...
+                        </Typography>
+                      )}
+                    </Grid>
+                    <Grid item xs={12}>
+                      <InputLabel>
+                        Subtask audio recordings:
+                      </InputLabel>
+                      {filesLoaded ? (
+                        <Select
+                          value={selectedAudio}
+                          onChange={handleAudioSelectionChange}
+                          fullWidth
+                        >
+                          {selectedSubtaskReports.recordingFileNames.map((item, index) => (
+                            <MenuItem key={index} value={item} onClick={() => handleAudioFileClick(index)}>
+                              {item}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      ) : (
+                        <Typography>
+                          Loading...
+                        </Typography>
+                      )}
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <Grid>
+                    <Typography>
+                      This subtask contains no report as of now
+                    </Typography>
+                  </Grid>
+                )}
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseSubtaskReports}>
                   Cancel
                 </Button>
               </DialogActions>
@@ -272,10 +549,10 @@ export const SubtaskComponent = ({ documentData }) => {
                               <Typography variant="body1" noWrap>Paritcipant: {item.participantName}</Typography>
                               <Typography variant="body2" noWrap>Description: {item.description}</Typography>
                             </ListItemText>
-                            <IconButton>
+                            <IconButton onClick={() => handleOpenSubtaskReports(item.id)}>
                               <ArrowDropDownIcon />
                             </IconButton>
-                            <IconButton>
+                            <IconButton onClick={() => handleDeleteConfirmClickOpen(item.id)}>
                               <DeleteIcon />
                             </IconButton>
                           </ListItem>

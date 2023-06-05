@@ -27,6 +27,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import TaskDetailsComponent from "./Components/TaskDetailsComponent.js";
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import MapIcon from "@mui/icons-material/Map";
 import CheckpointIcon from "@mui/icons-material/LocationOn";
@@ -36,6 +37,7 @@ import { CheckpointsView } from "./ChecpointsMap.js";
 import PatrolGroupChatComponent from "./Components/PatrolGroupChatComponent.js"
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { SubtaskComponent } from "./Components/SubtaskComponent.js";
+import { PatrolParticipantReportComponent } from "./Components/PatrolParticipantReportComponent.js";
 
 const drawerWidth = 240;
 
@@ -170,6 +172,8 @@ export function TaskDetails() {
       return <PatrolGroupChatComponent documentData={documentData} />;
     } else if (page === "subtasks") {
       return <SubtaskComponent documentData={documentData} />;
+    } else if (page === "reports") {
+      return <PatrolParticipantReportComponent documentData={documentData} />;
     }
   };
 
@@ -199,9 +203,15 @@ export function TaskDetails() {
       </ListItemButton>
       <ListItemButton onClick={() => setCurrentPage("subtasks")}>
         <ListItemIcon>
-          <AssignmentIcon/>
+          <AssignmentIcon />
         </ListItemIcon>
         <ListItemText primary="Subtasks" />
+      </ListItemButton>
+      <ListItemButton onClick={() => setCurrentPage("reports")}>
+        <ListItemIcon>
+          <ReportProblemIcon />
+        </ListItemIcon>
+        <ListItemText primary="Patrol Reports" />
       </ListItemButton>
       <ListItemButton onClick={() => setCurrentPage("chat")}>
         <ListItemIcon>
