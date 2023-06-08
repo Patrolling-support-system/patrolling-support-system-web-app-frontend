@@ -531,6 +531,7 @@ export const SubtaskComponent = ({ documentData }) => {
                       onChange={handleCheckpointSelectionChange}
                       style={{ width: '500px', textAlign: 'center' }}
                     >
+                      {/* Przerobić na checkpointNames */}
                       {parsedGeopoints.map((option, index) => (
                         <MenuItem key={index} value={option}>
                           Checkpoint {index}: {option}
