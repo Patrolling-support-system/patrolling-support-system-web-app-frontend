@@ -12,6 +12,10 @@ import {
   updateDoc,
   arrayUnion,
   GeoPoint,
+  collection,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import { useParams } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -51,6 +55,7 @@ export function CheckpointsView({ documentData, setSignal }) {
   const [enabledMap, setEnabledMap] = useState(false);
   const [newMarker, setNewMarker] = useState(null);
   const { taskId } = useParams();
+  const [safeToDelete, setSafeToDelete] = useState(false);
 
   const [newCheckpointName, setNewCheckpointName] = useState('');
   const handleNewCheckpointNameChange = (event) => {
@@ -62,7 +67,7 @@ export function CheckpointsView({ documentData, setSignal }) {
   const [openConfirmDeleteDialog, setOpenConfirmDeleteDialog] = React.useState(false);
   const handleOpenConfirmDeleteDialog = (index) => {
     setCheckpointToBeDeleted(index)
-    setOpenConfirmDeleteDialog(true);
+    checkIfSafeToDeleteCheckpoint(index);
   };
 
   const handleCloseConfirmDeleteDialog = () => {
@@ -134,6 +139,21 @@ export function CheckpointsView({ documentData, setSignal }) {
     }
   };
 
+  const checkIfSafeToDeleteCheckpoint = async (index) => {
+    const database = getFirestore();
+    const subtaskRef = collection(database, "CheckpointSubtasks");
+    const subtaskQuery = query(subtaskRef, where("task", "==", taskId), where("checkpoint", "==", documentData.checkpoints[index]))
+    const subtaskSnapshot = await getDocs(subtaskQuery);
+
+    if (subtaskSnapshot.empty) {
+      setSafeToDelete(true);
+    } else {
+      setSafeToDelete(false);
+    }
+
+    setOpenConfirmDeleteDialog(true);
+  }
+
 
   const changeCheckpointOrder = async (updatedCheckpointList) => {
     const database = getFirestore();
@@ -151,9 +171,6 @@ export function CheckpointsView({ documentData, setSignal }) {
     });
 
     setSignal({});
-
-    // TO DO
-    // Zastanowić się czy opłaca się implementować usuwanie subtasków, raportów itd. z bazy kiedy usnie się checkpoint
   }
 
   return (
@@ -168,20 +185,35 @@ export function CheckpointsView({ documentData, setSignal }) {
             </Grid>
             <Dialog open={openConfirmDeleteDialog} onClose={handleCloseConfirmDeleteDialog}>
               <DialogTitle>
-                Are you sure you want to delete this checkpoint?
+                Delete checkpoint
               </DialogTitle>
-              <DialogContentText style={{ minWidth: 100, minHeight: 100, marginLeft: '30px', marginRight: '30px' }}>
-                This will delete any subtasks, reports and files assigned to it.
-                This action is irreversible.
-              </DialogContentText>
-              <DialogActions>
-                <Button onClick={handleConfirmDeleteClick} variant="contained">
-                  Confirm
-                </Button>
-                <Button onClick={handleCloseConfirmDeleteDialog}>
-                  Cancel
-                </Button>
-              </DialogActions>
+              {safeToDelete ? (
+                <React.Fragment>
+                  <DialogContentText style={{ minWidth: 100, minHeight: 100, marginLeft: '30px', marginRight: '30px' }}>
+                    Are you sure you want to delete this checkpoint?
+                  </DialogContentText>
+                  <DialogActions>
+                    <Button onClick={handleConfirmDeleteClick} variant="contained">
+                      Confirm
+                    </Button>
+                    <Button onClick={handleCloseConfirmDeleteDialog}>
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  <DialogContentText style={{ minWidth: 100, minHeight: 100, marginLeft: '30px', marginRight: '30px' }}>
+                    Cannot delete checkpoint with active subtasks. Delete existing subtasks and try again.
+                  </DialogContentText>
+                  <DialogActions>
+                    <Button onClick={handleCloseConfirmDeleteDialog}>
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </React.Fragment>
+              )}
+
             </Dialog>
             <Grid item xs={4} sm={4} lg={4}>
               <Paper

@@ -25,7 +25,6 @@ import 'dayjs/locale/pl';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, Timestamp, where } from 'firebase/firestore'
-import { useEffect } from 'react';
 
 
 const steps = ['Enter task details', 'Choose participants', 'Review task'];
@@ -50,7 +49,6 @@ const theme = createTheme({
 
 export function CreateTask() {
   const [activeStep, setActiveStep] = React.useState(0);
-  const [formData, setFormData] = useState({});
 
   const handleNext = async () => {
     if (activeStep === steps.length - 1) {
@@ -238,7 +236,6 @@ export function CreateTask() {
       case 1:
         return <AddParticipantsForm
           selectedRows={selectedParticipants}
-          // handleSelectionModelChange={handleSelectedParticipantsChange}
           handleSelectedRowsChange={handleSelectedParticipantsChange}
         />;
       case 2:
@@ -406,7 +403,6 @@ export function CreateTask() {
                     Back
                   </Button>
                 )}
-
                 <Button
                   variant="contained"
                   onClick={handleNext}

@@ -13,15 +13,12 @@ import Badge from '@mui/material/Badge';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import Link from '@mui/material/Link';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ListItemText from '@mui/material/ListItemText';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import AddIcon from '@mui/icons-material/Add';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
@@ -185,10 +182,6 @@ function HomeContent() {
     getAndSortTasks()
   }, []);
 
-  // React.useEffect(() => {
-  //   setIsLoaded(true)
-  // }, [ongoingTasks, upcomingTasks, finishedTasks]);
-
   const mainListItems = (
     <React.Fragment>
       <ListItemButton onClick={() => handleNewTaskClick()}>
@@ -220,7 +213,7 @@ function HomeContent() {
         <AppBar position="absolute" open={open}>
           <Toolbar
             sx={{
-              pr: '24px', // keep right padding when drawer closed
+              pr: '24px',
             }}
           >
             <IconButton
@@ -244,11 +237,6 @@ function HomeContent() {
             >
               Patrolling Support System Home Page
             </Typography>
-            {/* <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton> */}
             <IconButton color="inherit" onClick={() => handleLogOut()}>
               {/* To do: Uniemozliwić cofanie po wylogowaniu lub wymagać stanu zalogowania przy każdej nawigacji */}
               <Typography
@@ -283,7 +271,6 @@ function HomeContent() {
           <List component="nav">
             {mainListItems}
             <Divider sx={{ my: 1 }} />
-            {/* {secondaryListItems} */}
           </List>
         </Drawer>
         <Box
@@ -328,7 +315,6 @@ function HomeContent() {
                     </List>
                   </Paper>
                 </Grid>
-                {/* Recent Deposits */}
                 <Grid item xs={4} md={4} lg={4}>
                   <Paper
                     sx={{
@@ -358,7 +344,6 @@ function HomeContent() {
                     </List>
                   </Paper>
                 </Grid>
-                {/* Recent Orders */}
                 <Grid item xs={4} md={4} lg={4}>
                   <Paper
                     sx={{
@@ -393,7 +378,6 @@ function HomeContent() {
                 Loading...
               </Typography>
             )}
-            {/* </Grid> */}
           </Container>
         </Box>
       </Box>

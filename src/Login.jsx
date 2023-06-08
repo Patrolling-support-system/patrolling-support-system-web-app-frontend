@@ -27,18 +27,6 @@ const theme = createTheme({
 
 export function Login() {
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [user, setUser] = useState("")
-
-  const handleEmailChange = (event) => {
-    setEmail(event.target.value);
-  };
-
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value)
-  }
-
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
@@ -61,10 +49,6 @@ export function Login() {
 
     return () => unsubscribe();
   }, [navigate]);
-
-  // React.useEffect(() => {
-  //     onAuthStateChanged(auth, (currentUser) => { setUser(currentUser)})
-  //   }, [])
 
     const logIn = async (data) => {
       try {
@@ -126,10 +110,6 @@ export function Login() {
               id="password"
               autoComplete="current-password"
             />
-            {/* <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            /> */}
             <Button
               type="submit"
               fullWidth

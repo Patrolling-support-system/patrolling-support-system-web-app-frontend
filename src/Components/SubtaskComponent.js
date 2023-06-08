@@ -35,7 +35,7 @@ export const SubtaskComponent = ({ documentData }) => {
 
   const [selectedCheckpoint, setSelectedCheckpoint] = React.useState("");
   const [selectedCheckpointSubtasks, setSelectedCheckpointSubtasks] = React.useState([]);
-  const [parsedGeopoints, setParsedGeopoints] = React.useState([]);
+  // const [parsedGeopoints, setParsedGeopoints] = React.useState([]);
   const [patrolParticipants, setPatrolParticipants] = React.useState([]);
 
   const [open, setOpen] = React.useState(false);
@@ -141,8 +141,10 @@ export const SubtaskComponent = ({ documentData }) => {
 
   const handleCheckpointSelectionChange = (event) => {
     setSelectedCheckpoint(event.target.value)
-    const checkpointArray = Object.values(parsedGeopoints);
-    const checkpointIndex = checkpointArray.indexOf(event.target.value);
+    // const checkpointArray = Object.values(parsedGeopoints);
+    // const checkpointIndex = checkpointArray.indexOf(event.target.value);
+
+    const checkpointIndex = documentData.checkpointNames.indexOf(event.target.value);
 
     setSelectedCheckboxIndex(checkpointIndex);
     getSubtasksFromFirestore(checkpointIndex);
@@ -187,7 +189,7 @@ export const SubtaskComponent = ({ documentData }) => {
 
   const addSubtaskToCheckpoint = async () => {
     if (auth.currentUser) {
-      const checkpointIndex = parsedGeopoints.indexOf(selectedCheckpoint);
+      const checkpointIndex = documentData.checkpointNames.indexOf(selectedCheckpoint);
       const checkpoint = documentData.checkpoints[checkpointIndex];
 
       const database = getFirestore();
@@ -314,24 +316,26 @@ export const SubtaskComponent = ({ documentData }) => {
   // Tu do sprawdzenia co się dzieje jak checkpointy ulegną zmianie
   // ------------------------------------------------------------------------------------------------------
 
-  React.useEffect(() => {
-    if (documentData.hasOwnProperty("checkpoints") && documentData.checkpoints.length > 0) {
-      setParsedGeopoints(documentData.checkpoints.map((point) => `${point._lat}, ${point._long}`));
-      setCheckpointsExist(true);
-    }
-  }, [documentData.checkpoints]);
+  // React.useEffect(() => {
+  //   if (documentData.hasOwnProperty("checkpoints") && documentData.checkpoints.length > 0) {
+  //     setParsedGeopoints(documentData.checkpoints.map((point) => `${point._lat}, ${point._long}`));
+  //     setCheckpointsExist(true);
+  //   }
+  // }, [documentData.checkpoints]);
 
   React.useEffect(() => {
     if (documentData.hasOwnProperty("checkpoints")) {
       if (documentData.checkpoints[0] !== null) {
-        setSelectedCheckpoint(parsedGeopoints[0]);
+        setSelectedCheckpoint(documentData.checkpointNames[0]);
         setSelectedCheckboxIndex(0);
         getSubtasksFromFirestore(0);
+        setCheckpointsExist(true);
       }
     }
-  }, [parsedGeopoints])
+  }, [documentData.checkpointNames])
 
 
+  // console.log(parsedGeopoints);
   // ------------------------------------------------------------------------------------------------------
 
   return (
@@ -410,7 +414,7 @@ export const SubtaskComponent = ({ documentData }) => {
                 <Dialog open={openDeleteConfirm} onClose={handleDeleteConfirmClose}>
                   {containsReport ? (
                     <React.Fragment>
-                      <DialogTitle>
+                      <DialogTitle style={{ marginLeft: '30px', marginRight: '30px' }}>
                         Cannot delete subtask with assigned report or file
                       </DialogTitle>
                       <DialogActions>
@@ -532,9 +536,9 @@ export const SubtaskComponent = ({ documentData }) => {
                       style={{ width: '500px', textAlign: 'center' }}
                     >
                       {/* Przerobić na checkpointNames */}
-                      {parsedGeopoints.map((option, index) => (
+                      {documentData.checkpointNames.map((option, index) => (
                         <MenuItem key={index} value={option}>
-                          Checkpoint {index}: {option}
+                          {option}
                         </MenuItem>
                       ))}
                     </Select>

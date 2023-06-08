@@ -8,7 +8,7 @@ import {
 import * as React from "react";
 import { auth } from "./firebase-config.js";
 import { collection, getDocs, getFirestore } from "firebase/firestore";
-import { Paper, Typography } from "@mui/material";
+import { Paper, Typography, Grid } from "@mui/material";
 
 let url = "http://maps.google.com/mapfiles/ms/icons/green.png";
 
@@ -21,7 +21,7 @@ const mapContainerStyle = {
   margin: 0,
   padding: 0,
   width: "100%",
-  height: "80vh",
+  height: "605px",
 };
 
 const center = {
@@ -68,59 +68,62 @@ export function MapView({ documentData }) {
 
   return (
     <div>
-      <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
+      <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, position: 'relative', height: 750, }}>
+        
         <Typography sx={{ textAlign: 'center', fontSize: '2rem' }}>
           {documentData.name}
         </Typography>
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          zoom={13}
-          center={center}
-        >
-          {documentData.checkpoints?.map((checkpoint, index) => {
-            var marker = (
-              <Marker
-                icon={{ url: url }}
+        <Grid item xs={12}>
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={13}
+            center={center}
+          >
+            {documentData.checkpoints?.map((checkpoint, index) => {
+              var marker = (
+                <Marker
+                  icon={{ url: url }}
+                  key={index}
+                  position={{
+                    lat: Number.parseFloat(checkpoint._lat),
+                    lng: Number.parseFloat(checkpoint._long),
+                  }}
+                  opacity={0.9}
+                  label={index.toString()}
+                />
+              );
+              return marker;
+            })}
+
+            {patrolRouteData.map((patrolRoute, index) => (
+              <Polyline
                 key={index}
-                position={{
-                  lat: Number.parseFloat(checkpoint._lat),
-                  lng: Number.parseFloat(checkpoint._long),
-                }}
-                opacity={0.9}
-                label={index.toString()}
+                path={patrolRoute.route.map(
+                  (route) => new window.google.maps.LatLng(route._lat, route._long)
+                )}
+                options={{ strokeColor: randomColor(index) }}
               />
-            );
-            return marker;
-          })}
+            ))}
 
-          {patrolRouteData.map((patrolRoute, index) => (
-            <Polyline
-              key={index}
-              path={patrolRoute.route.map(
-                (route) => new window.google.maps.LatLng(route._lat, route._long)
-              )}
-              options={{ strokeColor: randomColor(index) }}
-            />
-          ))}
-
-          {patrolRouteData.map((patrolRoute, index) => (
-            <Marker
-              key={index}
-              icon={{
-                path: window.google.maps.SymbolPath.CIRCLE,
-                fillColor: randomColor(index),
-                fillOpacity: 1,
-                scale: 6,
-                strokeColor: randomColor(index),
-                strokeWeight: 0.5,
-              }}
-              position={{
-                lat: patrolRoute.route[patrolRoute.route.length - 1]._lat,
-                lng: patrolRoute.route[patrolRoute.route.length - 1]._long,
-              }}
-            />
-          ))}
-        </GoogleMap>
+            {patrolRouteData.map((patrolRoute, index) => (
+              <Marker
+                key={index}
+                icon={{
+                  path: window.google.maps.SymbolPath.CIRCLE,
+                  fillColor: randomColor(index),
+                  fillOpacity: 1,
+                  scale: 6,
+                  strokeColor: randomColor(index),
+                  strokeWeight: 0.5,
+                }}
+                position={{
+                  lat: patrolRoute.route[patrolRoute.route.length - 1]._lat,
+                  lng: patrolRoute.route[patrolRoute.route.length - 1]._long,
+                }}
+              />
+            ))}
+          </GoogleMap>
+        </Grid>
       </Paper>
     </div>
   );

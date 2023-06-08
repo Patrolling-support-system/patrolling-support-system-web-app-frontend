@@ -51,6 +51,13 @@ const PatrolGroupChatComponent = ({ documentData }) => {
 
   const [currentChat, setCurrentChat] = React.useState();
 
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleSendClick();
+    }
+  }
+
   const getChatUsersDataFromFirestore = async () => {
     if (auth.currentUser) {
       const database = getFirestore();
@@ -269,6 +276,7 @@ const PatrolGroupChatComponent = ({ documentData }) => {
                       name="chatBox"
                       value={currentMessage}
                       onChange={handleChatBoxChange}
+                      onKeyPress={handleKeyPress}
                     >
                     </TextField>
                   </Grid>

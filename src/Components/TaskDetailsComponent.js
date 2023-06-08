@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, Timestamp, where } from 'firebase/firestore'
+import { collection, doc, documentId, getDoc, getDocs, getFirestore, query, where } from 'firebase/firestore'
 import { auth } from "../firebase-config.js";
 import moment from 'moment';
 import { Button, Paper } from '@mui/material';
@@ -54,9 +54,6 @@ const TaskDetailsComponent = ({ documentData }) => {
     navigate(`/editTask/${taskId}`);
   }
 
-  // console.log(documentData);
-  // console.log(taskId);
-
   return (
     <React.Fragment>
       <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, position: 'relative' }}>
@@ -84,7 +81,6 @@ const TaskDetailsComponent = ({ documentData }) => {
             <Button
               variant='contained'
               size='large'
-              // style={{ marginTop: '20px', marginBottom: '10px', marginLeft: '15px' }}
               style={{ marginRight: '35px' }}
               onClick={() => handleEditTaskClick()}
             >
@@ -121,7 +117,6 @@ const TaskDetailsComponent = ({ documentData }) => {
                 fullWidth
                 multiline
                 rows={1}
-                // value={participantList.map(participant => participant.name + ' ' + participant.surname).join(', ')}
                 value={coordinator.name + ' ' + coordinator.surname}
                 disabled
                 sx={{

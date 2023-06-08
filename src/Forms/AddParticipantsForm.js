@@ -11,8 +11,6 @@ import { auth } from "../firebase-config.js";
 import ReplayIcon from '@mui/icons-material/Replay';
 
 const columns = [
-  // { field: 'userId', headerName: 'ID', width: 70 },
-  // { field: 'id', headerName: 'ID', width: 70, checkboxSelection: true},
   { field: 'name', headerName: 'First name', width: 180 },
   { field: 'surname', headerName: 'Last name', width: 180 },
   { field: 'supervisor', headerName: 'Supervisor', width: 190 },
@@ -44,7 +42,6 @@ export function AddParticipantsForm({
         const checked = currentSelection.includes(doc.id);
         fetchedRows.push({
           id: doc.id,
-          // id: data.userId,
           surname: data.surname,
           name: data.name,
           supervisor: data.supervisor,
@@ -64,7 +61,6 @@ export function AddParticipantsForm({
       .filter((row) => row.checked)
       .map((row) => row.id);
     setPageLoadSelection(initialSelectedRows);
-    // jak by cię coś psuło to tutaj patrzeć
     handleSelectedRowsChange(initialSelectedRows);
   }, [rows]);
 
@@ -95,9 +91,6 @@ export function AddParticipantsForm({
       setRows(fetchedRows);
     }
   };
-
-  // console.log(rows.supervisor);
-  // console.log(currentSelection);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -133,7 +126,6 @@ export function AddParticipantsForm({
                 pageSize={5}
                 rowsPerPageOptions={[5]}
                 checkboxSelection
-                //  onRowSelectionModelChange={handleSelectedRowsChange}
                 onRowSelectionModelChange={handleSelectionChange}
                 rowSelectionModel={pageLoadSelection}
               />

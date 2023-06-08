@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import * as React from 'react';
 import { auth } from "./firebase-config.js";
-import { collection, doc, getDoc, getDocs, getFirestore, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, getFirestore, query, } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import moment from "moment/moment.js";
 
@@ -92,7 +92,6 @@ export function ViewTask() {
           startDate: data.startDate.toDate(),
         });
       });
-      // setTasks(fetchedTasks);
       appendCoordinatorNameFromFirestore(fetchedTasks)
     }
   };
