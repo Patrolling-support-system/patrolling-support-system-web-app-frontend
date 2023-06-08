@@ -234,7 +234,6 @@ export function TaskDetails() {
     </React.Fragment>
   );
 
-
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>

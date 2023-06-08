@@ -89,6 +89,7 @@ export const SubtaskComponent = ({ documentData }) => {
   const [selectedSubtaskReports, setSelectedSubtaskReports] = React.useState([]);
   const [selectedImage, setSelectedImage] = React.useState("");
   const [selectedAudio, setSelectedAudio] = React.useState("");
+  const [checkpointsExits, setCheckpointsExist] = React.useState(false);
 
   const handleOpenSubtaskReports = (subtaskId) => {
     checkIfSubtaskContainsReport(subtaskId);
@@ -102,16 +103,10 @@ export const SubtaskComponent = ({ documentData }) => {
     setSelectedImage("");
   };
 
-  // const handleImageSelectionChange = (event) => {
-  //   setSelectedImage(event.target.value);
-  // };
   const handleImageSelectionChange = () => {
     setSelectedImage("");
   };
 
-  // const handleAudioSelectionChange = (event) => {
-  //   setSelectedAudio(event.target.value);
-  // };
   const handleAudioSelectionChange = () => {
     setSelectedAudio("");
   };
@@ -320,14 +315,19 @@ export const SubtaskComponent = ({ documentData }) => {
   // ------------------------------------------------------------------------------------------------------
 
   React.useEffect(() => {
-    setParsedGeopoints(documentData.checkpoints.map((point) => `${point._lat}, ${point._long}`));
+    if (documentData.hasOwnProperty("checkpoints") && documentData.checkpoints.length > 0) {
+      setParsedGeopoints(documentData.checkpoints.map((point) => `${point._lat}, ${point._long}`));
+      setCheckpointsExist(true);
+    }
   }, [documentData.checkpoints]);
 
   React.useEffect(() => {
-    if (documentData.checkpoints[0] !== null) {
-      setSelectedCheckpoint(parsedGeopoints[0]);
-      setSelectedCheckboxIndex(0);
-      getSubtasksFromFirestore(0);
+    if (documentData.hasOwnProperty("checkpoints")) {
+      if (documentData.checkpoints[0] !== null) {
+        setSelectedCheckpoint(parsedGeopoints[0]);
+        setSelectedCheckboxIndex(0);
+        getSubtasksFromFirestore(0);
+      }
     }
   }, [parsedGeopoints])
 
@@ -338,245 +338,257 @@ export const SubtaskComponent = ({ documentData }) => {
     <React.Fragment>
       <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, position: 'relative', height: 750, }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} container justifyContent={"center"}>
-            <Typography variant="h5">
-              Choose checkpoint to view assigned subtasks:
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={2} sx={{ position: 'absolute', top: 0, right: 0 }}>
-            <Button
-              variant='contained'
-              size='large'
-              style={{ marginRight: '35px' }}
-              onClick={() => handleClickOpen()}
-            >
-              Add subtask
-            </Button>
-            <Dialog open={open} onClose={handleClose} fullWidth>
-              <DialogTitle>
-                Add subtask to current checkpoint:
-              </DialogTitle>
-              <DialogContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Subtask name..."
-                      fullWidth
-                      variant="outlined"
-                      value={subtaskName}
-                      onChange={handleSubtaskNameChange}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Subtask description..."
-                      fullWidth
-                      variant="outlined"
-                      multiline
-                      rows={3}
-                      value={subtaskDescription}
-                      onChange={handleSubtaskDescriptionChange}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <InputLabel id="participant-label" shrink={selectedParticipant !== ''}>
-                      Choose subtask participant:
-                    </InputLabel>
+          {checkpointsExits ? (
+            <React.Fragment>
+              <Grid item xs={12} sm={12} container justifyContent={"center"}>
+                <Typography variant="h5">
+                  Choose checkpoint to view assigned subtasks:
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={2} sx={{ position: 'absolute', top: 0, right: 0 }}>
+                <Button
+                  variant='contained'
+                  size='large'
+                  style={{ marginRight: '35px' }}
+                  onClick={() => handleClickOpen()}
+                >
+                  Add subtask
+                </Button>
+                <Dialog open={open} onClose={handleClose} fullWidth>
+                  <DialogTitle>
+                    Add subtask to current checkpoint:
+                  </DialogTitle>
+                  <DialogContent>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <TextField
+                          label="Subtask name..."
+                          fullWidth
+                          variant="outlined"
+                          value={subtaskName}
+                          onChange={handleSubtaskNameChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          label="Subtask description..."
+                          fullWidth
+                          variant="outlined"
+                          multiline
+                          rows={3}
+                          value={subtaskDescription}
+                          onChange={handleSubtaskDescriptionChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <InputLabel id="participant-label" shrink={selectedParticipant !== ''}>
+                          Choose subtask participant:
+                        </InputLabel>
+                        <Select
+                          value={selectedParticipant}
+                          onChange={handleParticipantChange}
+                          fullWidth
+                        >
+                          {patrolParticipants.map((item, index) => (
+                            <MenuItem key={index} value={item.userId}>
+                              {item.name} {item.surname}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </Grid>
+                    </Grid>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleAddSubtask} variant='contained'>
+                      Add subtask
+                    </Button>
+                    <Button onClick={handleClose}>
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+                <Dialog open={openDeleteConfirm} onClose={handleDeleteConfirmClose}>
+                  {containsReport ? (
+                    <React.Fragment>
+                      <DialogTitle>
+                        Cannot delete subtask with assigned report or file
+                      </DialogTitle>
+                      <DialogActions>
+                        <Button onClick={handleDeleteConfirmClose}>
+                          Cancel
+                        </Button>
+                      </DialogActions>
+                    </React.Fragment>
+
+                  ) : (
+                    <React.Fragment>
+                      <DialogTitle>
+                        Are you sure you want to delete this subtask?
+                      </DialogTitle>
+                      <DialogActions>
+                        <Button onClick={handleSubtaskDeleteClick} variant="contained">
+                          Confirm
+                        </Button>
+                        <Button onClick={handleDeleteConfirmClose}>
+                          Cancel
+                        </Button>
+                      </DialogActions>
+                    </React.Fragment>
+                  )}
+                </Dialog>
+                {/* Dialog który obsługuje otwieranie raportów dla danego subtaska */}
+                <Dialog open={openReportDialog} onClose={handleCloseSubtaskReports}>
+                  <DialogTitle>
+                    Reports assgined to this subtask:
+                  </DialogTitle>
+                  <DialogContent style={{ minWidth: 600, minHeight: 350 }}>
+                    {containsReport ? (
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <InputLabel>
+                            Subtask report note:
+                          </InputLabel>
+                          <TextField
+                            variant='outlined'
+                            margin="normal"
+                            fullWidth
+                            multiline
+                            rows={2}
+                            value={selectedSubtaskReports.note}
+                            disabled
+                            sx={{
+                              "& .MuiInputBase-input.Mui-disabled": {
+                                WebkitTextFillColor: "#000000",
+                              },
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <InputLabel>
+                            Subtask images:
+                          </InputLabel>
+                          {filesLoaded ? (
+                            <Select
+                              value={selectedImage}
+                              onChange={handleImageSelectionChange}
+                              fullWidth
+                            >
+                              {selectedSubtaskReports.imageFileNames.map((item, index) => (
+                                <MenuItem key={index} value={item} onClick={() => handleImageFileClick(index)}>
+                                  {item}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          ) : (
+                            <Typography>
+                              Loading...
+                            </Typography>
+                          )}
+                        </Grid>
+                        <Grid item xs={12}>
+                          <InputLabel>
+                            Subtask audio recordings:
+                          </InputLabel>
+                          {filesLoaded ? (
+                            <Select
+                              value={selectedAudio}
+                              onChange={handleAudioSelectionChange}
+                              fullWidth
+                            >
+                              {selectedSubtaskReports.recordingFileNames.map((item, index) => (
+                                <MenuItem key={index} value={item} onClick={() => handleAudioFileClick(index)}>
+                                  {item}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          ) : (
+                            <Typography>
+                              Loading...
+                            </Typography>
+                          )}
+                        </Grid>
+                      </Grid>
+                    ) : (
+                      <Grid>
+                        <Typography>
+                          This subtask contains no report as of now
+                        </Typography>
+                      </Grid>
+                    )}
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseSubtaskReports}>
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Grid>
+              {isLoaded ? (
+                <React.Fragment>
+                  <Grid item xs={12} sm={12} container justifyContent={"center"}>
                     <Select
-                      value={selectedParticipant}
-                      onChange={handleParticipantChange}
-                      fullWidth
+                      value={selectedCheckpoint}
+                      onChange={handleCheckpointSelectionChange}
+                      style={{ width: '500px', textAlign: 'center' }}
                     >
-                      {patrolParticipants.map((item, index) => (
-                        <MenuItem key={index} value={item.userId}>
-                          {item.name} {item.surname}
+                      {parsedGeopoints.map((option, index) => (
+                        <MenuItem key={index} value={option}>
+                          Checkpoint {index}: {option}
                         </MenuItem>
                       ))}
                     </Select>
                   </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleAddSubtask} variant='contained'>
-                  Add subtask
-                </Button>
-                <Button onClick={handleClose}>
-                  Cancel
-                </Button>
-              </DialogActions>
-            </Dialog>
-            <Dialog open={openDeleteConfirm} onClose={handleDeleteConfirmClose}>
-              {containsReport ? (
-                <React.Fragment>
-                  <DialogTitle>
-                    Cannot delete subtask with assigned report or file
-                  </DialogTitle>
-                  <DialogActions>
-                    <Button onClick={handleDeleteConfirmClose}>
-                      Cancel
-                    </Button>
-                  </DialogActions>
+                  <Grid item xs={12} sm={12}>
+                    <Divider orientation='horizontal' />
+                    {selectedCheckpointSubtasks.length > 0 ? (
+                      <div style={{ height: "550px", overflowY: "scroll" }}>
+                        <List>
+                          {selectedCheckpointSubtasks.map((item, index) => (
+                            <React.Fragment key={index}>
+                              <ListItem >
+                                <ListItemText>
+                                  <Typography variant="h6" noWrap>Subtask: {item.subtaskName}</Typography>
+                                  <Typography variant="body1" noWrap>Paritcipant: {item.participantName}</Typography>
+                                  <Typography variant="body2" noWrap>Description: {item.description}</Typography>
+                                </ListItemText>
+                                <IconButton onClick={() => handleOpenSubtaskReports(item.id)}>
+                                  <ArrowDropDownIcon />
+                                </IconButton>
+                                <IconButton onClick={() => handleDeleteConfirmClickOpen(item.id)}>
+                                  <DeleteIcon />
+                                </IconButton>
+                              </ListItem>
+                              <Divider orientation='horizontal' />
+                            </React.Fragment>
+                          ))}
+                        </List>
+                      </div>
+                    ) : (
+                      <React.Fragment>
+                        <Grid container justifyContent={"center"}>
+                          <Typography variant="h5">
+                            No subtasks declared for this checkpoint
+                          </Typography>
+                        </Grid>
+                      </React.Fragment>
+                    )}
+                  </Grid>
                 </React.Fragment>
-
               ) : (
                 <React.Fragment>
-                  <DialogTitle>
-                    Are you sure you want to delete this subtask?
-                  </DialogTitle>
-                  <DialogActions>
-                    <Button onClick={handleSubtaskDeleteClick} variant="contained">
-                      Confirm
-                    </Button>
-                    <Button onClick={handleDeleteConfirmClose}>
-                      Cancel
-                    </Button>
-                  </DialogActions>
-                </React.Fragment>
-              )}
-            </Dialog>
-            {/* Dialog który obsługuje otwieranie raportów dla danego subtaska */}
-            <Dialog open={openReportDialog} onClose={handleCloseSubtaskReports}>
-              <DialogTitle>
-                Reports assgined to this subtask:
-              </DialogTitle>
-              <DialogContent style={{ minWidth: 600, minHeight: 350 }}>
-                {containsReport ? (
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <InputLabel>
-                        Subtask report note:
-                      </InputLabel>
-                      <TextField
-                        variant='outlined'
-                        margin="normal"
-                        fullWidth
-                        multiline
-                        rows={2}
-                        value={selectedSubtaskReports.note}
-                        disabled
-                        sx={{
-                          "& .MuiInputBase-input.Mui-disabled": {
-                            WebkitTextFillColor: "#000000",
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <InputLabel>
-                        Subtask images:
-                      </InputLabel>
-                      {filesLoaded ? (
-                        <Select
-                          value={selectedImage}
-                          onChange={handleImageSelectionChange}
-                          fullWidth
-                        >
-                          {selectedSubtaskReports.imageFileNames.map((item, index) => (
-                            <MenuItem key={index} value={item} onClick={() => handleImageFileClick(index)}>
-                              {item}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      ) : (
-                        <Typography>
-                          Loading...
-                        </Typography>
-                      )}
-                    </Grid>
-                    <Grid item xs={12}>
-                      <InputLabel>
-                        Subtask audio recordings:
-                      </InputLabel>
-                      {filesLoaded ? (
-                        <Select
-                          value={selectedAudio}
-                          onChange={handleAudioSelectionChange}
-                          fullWidth
-                        >
-                          {selectedSubtaskReports.recordingFileNames.map((item, index) => (
-                            <MenuItem key={index} value={item} onClick={() => handleAudioFileClick(index)}>
-                              {item}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      ) : (
-                        <Typography>
-                          Loading...
-                        </Typography>
-                      )}
-                    </Grid>
-                  </Grid>
-                ) : (
-                  <Grid>
+                  <Grid container justifyContent={"center"}>
                     <Typography>
-                      This subtask contains no report as of now
+                      Loading...
                     </Typography>
                   </Grid>
-                )}
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleCloseSubtaskReports}>
-                  Cancel
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </Grid>
-          {isLoaded ? (
-            <React.Fragment>
-              <Grid item xs={12} sm={12} container justifyContent={"center"}>
-                <Select
-                  value={selectedCheckpoint}
-                  onChange={handleCheckpointSelectionChange}
-                  style={{ width: '500px', textAlign: 'center' }}
-                >
-                  {parsedGeopoints.map((option, index) => (
-                    <MenuItem key={index} value={option}>
-                      Checkpoint {index}: {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Grid>
-              <Grid item xs={12} sm={12}>
-                <Divider orientation='horizontal' />
-                {selectedCheckpointSubtasks.length > 0 ? (
-                  <div style={{ height: "550px", overflowY: "scroll" }}>
-                    <List>
-                      {selectedCheckpointSubtasks.map((item, index) => (
-                        <React.Fragment key={index}>
-                          <ListItem >
-                            <ListItemText>
-                              <Typography variant="h6" noWrap>Subtask: {item.subtaskName}</Typography>
-                              <Typography variant="body1" noWrap>Paritcipant: {item.participantName}</Typography>
-                              <Typography variant="body2" noWrap>Description: {item.description}</Typography>
-                            </ListItemText>
-                            <IconButton onClick={() => handleOpenSubtaskReports(item.id)}>
-                              <ArrowDropDownIcon />
-                            </IconButton>
-                            <IconButton onClick={() => handleDeleteConfirmClickOpen(item.id)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </ListItem>
-                          <Divider orientation='horizontal' />
-                        </React.Fragment>
-                      ))}
-                    </List>
-                  </div>
-                ) : (
-                  <React.Fragment>
-                    <Grid container justifyContent={"center"}>
-                      <Typography variant="h5">
-                        No subtasks declared for this checkpoint
-                      </Typography>
-                    </Grid>
-                  </React.Fragment>
-                )}
-              </Grid>
+                </React.Fragment>
+              )}
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <Grid container justifyContent={"center"}>
-                <Typography>
-                  Loading...
+              <Grid item xs={12} sm={12} container justifyContent={"center"}>
+                <Typography variant="h5">
+                  No checkpoints declared yet. Declare a checkpoint to add and manage subtasks
                 </Typography>
               </Grid>
             </React.Fragment>

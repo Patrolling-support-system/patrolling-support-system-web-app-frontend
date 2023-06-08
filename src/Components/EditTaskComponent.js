@@ -287,8 +287,6 @@ export function EditTaskComponent() {
     setIsLoaded(true);
   }, [documentData, coordinatorList])
 
-  console.log(userRole);
-
   function getStepContent(step) {
     switch (step) {
       case 0:
@@ -443,6 +441,11 @@ export function EditTaskComponent() {
                   rows={1}
                   value={taskName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -457,6 +460,11 @@ export function EditTaskComponent() {
                   rows={1}
                   value={locationName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -471,6 +479,11 @@ export function EditTaskComponent() {
                   rows={1}
                   value={selectedCoordinatorName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -485,6 +498,11 @@ export function EditTaskComponent() {
                   rows={2}
                   value={participantList.map(participant => participant.name + ' ' + participant.surname).join(', ')}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -508,6 +526,11 @@ export function EditTaskComponent() {
                   // value={moment(documentData.startDate.toDate()).format('DD/MM/YYYY HH:mm')}
                   value={moment(startDate).format('DD/MM/YYYY HH:mm')}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10} >
@@ -530,6 +553,11 @@ export function EditTaskComponent() {
                   // value={moment(documentData.startDate.toDate()).format('DD/MM/YYYY HH:mm')}
                   value={moment(endDate).format('DD/MM/YYYY HH:mm')}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -544,6 +572,11 @@ export function EditTaskComponent() {
                   rows={4}
                   value={taskDescription}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
             </Grid>
