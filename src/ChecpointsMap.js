@@ -256,25 +256,6 @@ export function CheckpointsView({ documentData, setSignal }) {
                   </div>
                 </Grid>
                 <Divider orientation="horizontal" />
-                {/* Dopytać Madzi co to robi */}
-                {/* {newMarker !== null ? (
-                  <Grid item xs={12} sm={10} style={{ marginTop: '20px' }}>
-                    <TextField
-                      variant="outlined"
-                      margin="normal"
-                      width="auto"
-                      rows={1}
-                      value={`N: ${newMarker._lat.toFixed(
-                        6
-                      )}, ${newMarker._long.toFixed(6)}`}
-                      sx={{
-                        "& .MuiInputBase-input.Mui-disabled": {
-                          WebkitTextFillColor: "#000000",
-                        },
-                      }}
-                    />
-                  </Grid>
-                ) : null} */}
                 <Grid item xs={12}>
                   <TextField
                     label="Enter new checkpoint name"

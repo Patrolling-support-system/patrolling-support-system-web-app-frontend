@@ -9,6 +9,8 @@ import { query } from "firebase/database";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { getDownloadURL, getStorage, ref } from "firebase/storage";
+import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
+import { Loader } from "@googlemaps/js-api-loader";
 
 const mdTheme = createTheme({
   palette: {
@@ -27,6 +29,20 @@ const mdTheme = createTheme({
   },
 });
 
+const loader = new Loader({
+  apiKey: "AIzaSyBRx2VHwF6GZaONNSYekgsUTRZ6vrMN1FA",
+});
+
+const mapContainerStyle = {
+  margin: 0,
+  padding: 0,
+  width: "100%",
+  height: "630px",
+};
+
+
+let url = "http://maps.google.com/mapfiles/ms/icons/green.png";
+
 export const PatrolParticipantReportComponent = ({ documentData }) => {
 
   const { taskId } = useParams();
@@ -36,6 +52,8 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
 
   const [selectedReport, setSelectedReport] = React.useState([]);
 
+  const [selectedReportLocalization, setSelectedReportLocalization] = React.useState(null);
+
 
   // Icon button handlers
   const handleOpenReportDetails = (report) => {
@@ -43,8 +61,8 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
   }
 
   const handleOpenLocalization = (checkpoint) => {
-    console.log(checkpoint);
-    handleClickOpenLocalization();
+    // console.log("This is the base checkpoint: ", checkpoint);
+    setSelectedReportLocalization(checkpoint)
   }
   // ------------------------------------------------------------
 
@@ -91,12 +109,16 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
   // Location dialog handlers
   const [openLocalization, setOpenLocalization] = React.useState(false);
   const handleClickOpenLocalization = () => {
+    console.log(selectedReportLocalization);
+    setCheckpointLoaded(true);
     setOpenLocalization(true);
   };
 
   const handleCloseLocalization = () => {
     setOpenLocalization(false);
   };
+
+  const [checkpointLoaded, setCheckpointLoaded] = React.useState(false);
   // ---------------------------------------------------------------
 
   const getParticipantNamesFromFirestore = async (reportData) => {
@@ -212,9 +234,22 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
     }
   }
 
+  const { isMapLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: "AIzaSyBRx2VHwF6GZaONNSYekgsUTRZ6vrMN1FA",
+  });
+
+  if (loadError) console.log("Error loading maps");
+  // if (!isMapLoaded) console.log("Loading maps");
+
   React.useEffect(() => {
     getReportsFromFirestore()
   }, [])
+
+  React.useEffect(() => {
+    if (selectedReportLocalization !== null) {
+      handleClickOpenLocalization();
+    }
+  }, [selectedReportLocalization])
 
   return (
     <React.Fragment>
@@ -303,17 +338,35 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
             </DialogActions>
           </Dialog>
           {/* Localization Dialog */}
-          <Dialog open={openLocalization} onClose={handleOpenLocalization} fullWidth>
+          <Dialog open={openLocalization} onClose={handleCloseLocalization} fullWidth>
             <DialogTitle>
               Report location:
             </DialogTitle>
+            <DialogContent>
+              {checkpointLoaded ? (
+                <GoogleMap
+                  mapContainerStyle={mapContainerStyle}
+                  zoom={13}
+                  center={{
+                    lat: Number.parseFloat(selectedReportLocalization._lat),
+                    lng: Number.parseFloat(selectedReportLocalization._long)
+                  }}
+                >
+                  <Marker
+                    icon={{ url: url }}
+                    position={{
+                      lat: Number.parseFloat(selectedReportLocalization._lat),
+                      lng: Number.parseFloat(selectedReportLocalization._long)
+                    }} />
+                </GoogleMap>
+              ) : (null)}
+            </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseLocalization}>
                 Cancel
               </Button>
             </DialogActions>
           </Dialog>
-
           {isLoaded ? (
             <React.Fragment>
               <Grid item xs={12} sm={12}>
