@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import * as React from 'react';
 import { auth } from "./firebase-config.js";
-import { collection, getDocs, getFirestore, query } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, getFirestore, query, } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import moment from "moment/moment.js";
 
@@ -43,6 +43,31 @@ export function ViewTask() {
 
   const [tasks, setTasks] = React.useState([]);
 
+  const getNameFromFirestore = async (coordinatorId) => {
+    const database = getFirestore();
+    const coordinatorRef = doc(database, "Coordinator", coordinatorId)
+    const coordinatorSnapshot = await getDoc(coordinatorRef);
+
+    if (coordinatorSnapshot.exists()) {
+      const coordinatorName = coordinatorSnapshot.data().name + " " + coordinatorSnapshot.data().surname;
+      return coordinatorName;
+    } else {
+      console.log("No such document!");
+    }
+  }
+
+  const appendCoordinatorNameFromFirestore = async (taskList) => {
+    const processedTaskList = await Promise.all(
+      taskList.map(async (task) => {
+        const queriedData = await getNameFromFirestore(task.coordinator);
+        const updatedTask = { ...task, coordinatorName: queriedData };
+        return updatedTask;
+      })
+    )
+
+    setTasks(processedTaskList);
+  }
+
   const getTasksFromFirestore = async () => {
 
     const user = await new Promise((resolve) => {
@@ -62,11 +87,12 @@ export function ViewTask() {
         fetchedTasks.push({
           id: doc.id,
           name: data.name,
+          coordinator: data.coordinator,
           location: data.location,
           startDate: data.startDate.toDate(),
         });
       });
-      setTasks(fetchedTasks);
+      appendCoordinatorNameFromFirestore(fetchedTasks)
     }
   };
 
@@ -91,7 +117,7 @@ export function ViewTask() {
       <Container component="main" maxWidth="md" sx={{ mb: 4 }}>
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
           <Typography component="h1" variant="h4" align="center">
-            Current tasks
+            All tasks:
           </Typography>
           <Box sx={{ flexGrow: 1 }}>
             <React.Fragment>
@@ -104,6 +130,7 @@ export function ViewTask() {
                           <CardContent>
                             <Typography variant="h6">{task.name}</Typography>
                             <Typography variant="body1">{task.location}</Typography>
+                            <Typography variant="body1">Task coordinator: {task.coordinatorName}</Typography>
                             <Typography variant="body2">Start date: {moment(task.startDate).format('DD/MM/YYYY HH:mm')}</Typography>
                           </CardContent>
                         </Card>

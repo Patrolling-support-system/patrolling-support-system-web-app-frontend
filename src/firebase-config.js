@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import {getAuth} from "firebase/auth"
 import { getDatabase } from "firebase/database";
+import { getStorage } from "firebase/storage";
 
 // Convert to use environment variables for these:
 const firebaseConfig = {
@@ -16,6 +17,8 @@ const firebaseConfig = {
 
 
 const app = initializeApp(firebaseConfig);
+
+export const storage = getStorage(app)
 
 export const database = getDatabase(app)
 

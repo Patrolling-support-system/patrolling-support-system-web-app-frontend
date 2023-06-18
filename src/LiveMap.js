@@ -8,7 +8,8 @@ import {
 } from "@react-google-maps/api";
 import * as React from "react";
 import { auth } from "./firebase-config.js";
-import { collection, getDocs, getFirestore, GeoPoint,} from "firebase/firestore";
+import { collection, getDocs, getFirestore, GeoPoint, } from "firebase/firestore";
+import { Paper, Typography, Grid } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { push } from "firebase/database";
 import { InfoWindow } from "@react-google-maps/api";
@@ -24,7 +25,7 @@ const mapContainerStyle = {
   margin: 0,
   padding: 0,
   width: "100%",
-  height: "80vh",
+  height: "605px",
 };
 
 const center = {
@@ -89,9 +90,9 @@ export function MapView({ documentData }) {
     var str = [];
 
     checkpintsSubtasks?.map((subtask) => {
-      if(subtask.point._lat == checkpoint._lat && subtask.point._long == checkpoint._long){
+      if (subtask.point._lat == checkpoint._lat && subtask.point._long == checkpoint._long) {
         str.push(subtask.name)
-      } 
+      }
     });
     setSelectedSubtaskName(str);
   };
@@ -163,86 +164,93 @@ export function MapView({ documentData }) {
 
   return (
     <div>
-      <h4>{documentData.name}</h4>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        zoom={13}
-        center={center}
-        onLoad={onMapLoad}
-      >
-        {documentData.checkpoints?.map((checkpoint, index) => {
-          const lat = Number.parseFloat(checkpoint._lat);
-          const long = Number.parseFloat(checkpoint._long);
-          var marker = (
-            <Marker
-              icon={{ url: url }}
-              key={index}
-              position={{
-                lat: lat,
-                lng: long,
-              }}
-              opacity={0.9}
-              onClick={() => {
-                setSelected(checkpoint);
-                setSubtaskName(checkpoint);
-              }}
-              label={index.toString()}
-            />
-          );
-          return marker;
-        })}
+      <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, position: 'relative', height: 750, }}>
 
-        {selected ? (
-          <InfoWindow
-            position={{ lat: selected._lat, lng: selected._long }}
-            onCloseClick={() => {
-              setSelected(null);
-            }}
+        <Typography sx={{ textAlign: 'center', fontSize: '2rem' }}>
+          {documentData.name}
+        </Typography>
+        <Grid item xs={12}>
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={13}
+            center={center}
+            onLoad={onMapLoad}
           >
-            <div>
-              {selectedSubtaskName.map((name) => {
-                return <p>{name}</p>
-              })}
-            </div>
-          </InfoWindow>
-        ) : null}
+            {documentData.checkpoints?.map((checkpoint, index) => {
+              const lat = Number.parseFloat(checkpoint._lat);
+              const long = Number.parseFloat(checkpoint._long);
+              var marker = (
+                <Marker
+                  icon={{ url: url }}
+                  key={index}
+                  position={{
+                    lat: lat,
+                    lng: long,
+                  }}
+                  opacity={0.9}
+                  onClick={() => {
+                    setSelected(checkpoint);
+                    setSubtaskName(checkpoint);
+                  }}
+                  label={index.toString()}
+                />
+              );
+              return marker;
+            })}
 
-        {Array.from(patrolRouteData).map(([_, patrolRoute]) => (
-          <Polyline
-            path={patrolRoute
-              .sort((a, b) => a.time.seconds - b.time.seconds)
-              .map(
-                (route) =>
-                  new window.google.maps.LatLng(
-                    route.location._lat,
-                    route.location._long
-                  )
-              )}
-            options={{ strokeColor: randomColor(patrolRoute.length) }}
-          />
-        ))}
+            {selected ? (
+              <InfoWindow
+                position={{ lat: selected._lat, lng: selected._long }}
+                onCloseClick={() => {
+                  setSelected(null);
+                }}
+              >
+                <div>
+                  {selectedSubtaskName.map((name) => {
+                    return <p>{name}</p>
+                  })}
+                </div>
+              </InfoWindow>
+            ) : null}
 
-        {Array.from(patrolRouteData).map(([_, patrolRoute]) => {
-          var index = patrolRoute.length - 1;
-          return (
-            <Marker
-              icon={{
-                path: window.google.maps.SymbolPath.CIRCLE,
-                fillColor: randomColor(patrolRoute.length),
-                fillOpacity: 1,
-                scale: 6,
-                strokeColor: randomColor(patrolRoute.length),
-                strokeWeight: 0.5,
-              }}
-              position={{
-                lat: patrolRoute[index].location._lat,
-                lng: patrolRoute[index].location._long,
-              }}
-              label={patrolMembers.get(patrolRoute[index].patrolParticipantId)}
-            />
-          );
-        })}
-      </GoogleMap>
+            {Array.from(patrolRouteData).map(([_, patrolRoute]) => (
+              <Polyline
+                path={patrolRoute
+                  .sort((a, b) => a.time.seconds - b.time.seconds)
+                  .map(
+                    (route) =>
+                      new window.google.maps.LatLng(
+                        route.location._lat,
+                        route.location._long
+                      )
+                  )}
+                options={{ strokeColor: randomColor(patrolRoute.length) }}
+              />
+            ))}
+
+            {Array.from(patrolRouteData).map(([_, patrolRoute]) => {
+              var index = patrolRoute.length - 1;
+              return (
+                <Marker
+                  icon={{
+                    path: window.google.maps.SymbolPath.CIRCLE,
+                    fillColor: randomColor(patrolRoute.length),
+                    fillOpacity: 1,
+                    scale: 6,
+                    strokeColor: randomColor(patrolRoute.length),
+                    strokeWeight: 0.5,
+                  }}
+                  position={{
+                    lat: patrolRoute[index].location._lat,
+                    lng: patrolRoute[index].location._long,
+                  }}
+                  label={patrolMembers.get(patrolRoute[index].patrolParticipantId)}
+                />
+              );
+            })}
+          </GoogleMap>
+        </Grid>
+      </Paper>
     </div>
   );
 }

@@ -25,7 +25,6 @@ import 'dayjs/locale/pl';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
-import { useEffect } from 'react';
 import moment from 'moment';
 import { Menu } from '@mui/icons-material';
 import { MenuItem } from '@mui/material';
@@ -90,7 +89,6 @@ export function EditTaskComponent() {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setDocumentData(data);
-        // console.log(documentData);
         setTaskName(data.name);
         setLocationName(data.location);
         setCurrentStartDate(moment(data.startDate.toDate()).format('DD/MM/YYYY HH:mm'));
@@ -99,7 +97,6 @@ export function EditTaskComponent() {
         setEndDate(data.endDate.toDate());
         setTaskDescription(data.taskDescription);
         handleCurrentSelectionChange(data.patrolParticipants)
-        // handleCoordinatorData(data.coordinator)
         getCoordinatorsFromFirestore(data.coordinator);
       } else {
         console.log("No such document!");
@@ -166,11 +163,6 @@ export function EditTaskComponent() {
     setLocationName(event.target.value);
   };
 
-  // const [coordinatorId, setCoordinatorId] = useState(null);
-  // const handleCoordinatorData = (newData) => {
-  //   setCoordinatorId(newData);
-  // };
-
   const [taskStartDate, setTaskStartDate] = useState(null);
   const [startDate, setStartDate] = useState(new Date());
   const handleTaskStartDateChange = (newDate) => {
@@ -208,7 +200,7 @@ export function EditTaskComponent() {
   const getNamesFromFirestore = async (selectedParticipants) => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const collectionRef = collection(database, 'User');
+      const collectionRef = collection(database, 'Users');
       const documentQuery = query(collectionRef, where(documentId(), 'in', selectedParticipants));
       const querySnapshot = await getDocs(documentQuery)
       const participantsData = [];
@@ -216,7 +208,6 @@ export function EditTaskComponent() {
         const data = doc.data();
         const participant = {
           id: doc.id,
-          // id: data.userId,
           name: data.name,
           surname: data.surname
         };
@@ -253,13 +244,12 @@ export function EditTaskComponent() {
   const getCoordinatorsFromFirestore = async (coordinatorId) => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const collectionRef = collection(database, 'Coordinator');
+      const collectionRef = collection(database, 'Coordinators');
       const querySnapshot = await getDocs(collectionRef)
       const coordinatorsData = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         const coordinator = {
-          // id: doc.id,
           id: data.userId,
           name: data.name,
           surname: data.surname,
@@ -272,9 +262,6 @@ export function EditTaskComponent() {
 
       const currentUserData = coordinatorsData.find(coordinator => coordinator.id === auth.currentUser.uid);
       handleUserRoleChange(currentUserData.role)
-      // handleCoordinatorNameChange(currentCoordinator.name + ' ' + currentCoordinator.surname);
-
-      // handleCoordinatorNameChange();
     }
   }
 
@@ -283,11 +270,8 @@ export function EditTaskComponent() {
   }, [])
 
   React.useEffect(() => {
-    // console.log(documentData);
     setIsLoaded(true);
   }, [documentData, coordinatorList])
-
-  console.log(userRole);
 
   function getStepContent(step) {
     switch (step) {
@@ -342,31 +326,6 @@ export function EditTaskComponent() {
                       </MenuItem>
                     ))}
                   </Select>
-                  {/* {userRole === 'coordinatorAdmin' ? (
-                <Select
-                labelId="coordinator-label"
-                id="coordinator-select"
-                value={selectedCoordinator}
-                label="Select coordinator"
-                onChange={(event) => handleCoordinatorChange(event.target.value, coordinatorList)}
-                sx={{ width: '60%' }}
-              >
-                {coordinatorList.map((coordinator) => (
-                  <MenuItem key={coordinator.id} value={coordinator.id}>
-                    {`${coordinator.name} ${coordinator.surname}`}
-                  </MenuItem>
-                ))}
-              </Select>
-              ) : (
-                <TextField
-                variant='outlined'
-                margin="normal"
-                rows={1}
-                value={selectedCoordinator}
-                disabled
-              />
-              )} */}
-
                 </Grid>
                 <Grid item xs={12} sm={10} style={{ marginTop: '20px' }}>
                   <Typography>
@@ -443,6 +402,11 @@ export function EditTaskComponent() {
                   rows={1}
                   value={taskName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -457,6 +421,11 @@ export function EditTaskComponent() {
                   rows={1}
                   value={locationName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -471,6 +440,11 @@ export function EditTaskComponent() {
                   rows={1}
                   value={selectedCoordinatorName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -485,51 +459,45 @@ export function EditTaskComponent() {
                   rows={2}
                   value={participantList.map(participant => participant.name + ' ' + participant.surname).join(', ')}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
                 <Typography>
                   Task start date:
                 </Typography>
-                {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <MobileDateTimePicker
-                          slotProps={{ textField: { size: 'small' } }}
-                          ampm={false}
-                          format='DD/MM/YYYY HH:mm'
-                          value={taskStartDate}
-                          // onChange={handleTaskStartDateChange}
-                          readOnly
-                        />
-                      </LocalizationProvider> */}
                 <TextField
                   variant='outlined'
                   margin="normal"
                   rows={1}
-                  // value={moment(documentData.startDate.toDate()).format('DD/MM/YYYY HH:mm')}
                   value={moment(startDate).format('DD/MM/YYYY HH:mm')}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10} >
                 <Typography>
                   Task end date:
                 </Typography>
-                {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <MobileDateTimePicker
-                            slotProps={{ textField: { size: 'small' } }}
-                            ampm={false}
-                            format='DD/MM/YYYY HH:mm'
-                            value={taskEndDate} 
-                            readOnly
-                          />
-                        </LocalizationProvider> */}
                 <TextField
                   variant='outlined'
                   margin="normal"
                   rows={1}
-                  // value={moment(documentData.startDate.toDate()).format('DD/MM/YYYY HH:mm')}
                   value={moment(endDate).format('DD/MM/YYYY HH:mm')}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -544,6 +512,11 @@ export function EditTaskComponent() {
                   rows={4}
                   value={taskDescription}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
             </Grid>
@@ -600,7 +573,6 @@ export function EditTaskComponent() {
                     Back
                   </Button>
                 )}
-
                 <Button
                   variant="contained"
                   onClick={handleNext}

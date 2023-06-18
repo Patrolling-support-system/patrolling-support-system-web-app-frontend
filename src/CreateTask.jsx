@@ -25,7 +25,6 @@ import 'dayjs/locale/pl';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, Timestamp, where } from 'firebase/firestore'
-import { useEffect } from 'react';
 
 
 const steps = ['Enter task details', 'Choose participants', 'Review task'];
@@ -50,7 +49,6 @@ const theme = createTheme({
 
 export function CreateTask() {
   const [activeStep, setActiveStep] = React.useState(0);
-  const [formData, setFormData] = useState({});
 
   const handleNext = async () => {
     if (activeStep === steps.length - 1) {
@@ -86,6 +84,8 @@ export function CreateTask() {
         endDate: endDate,
         taskDescription: taskDescription,
         coordinator: auth.currentUser.uid,
+        checkpoints: [],
+        checkpointNames: []
       });
       console.log("Added new document with ID: ", docRef.id)
     }
@@ -147,7 +147,7 @@ export function CreateTask() {
   const getNamesFromFirestore = async (selectedParticipants) => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const collectionRef = collection(database, 'User');
+      const collectionRef = collection(database, 'Users');
       const documentQuery = query(collectionRef, where(documentId(), 'in', selectedParticipants));
       const querySnapshot = await getDocs(documentQuery)
       const participantsData = [];
@@ -238,7 +238,6 @@ export function CreateTask() {
       case 1:
         return <AddParticipantsForm
           selectedRows={selectedParticipants}
-          // handleSelectionModelChange={handleSelectedParticipantsChange}
           handleSelectedRowsChange={handleSelectedParticipantsChange}
         />;
       case 2:
@@ -260,6 +259,11 @@ export function CreateTask() {
                   rows={1}
                   value={taskName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -274,6 +278,11 @@ export function CreateTask() {
                   rows={1}
                   value={locationName}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -288,6 +297,11 @@ export function CreateTask() {
                   rows={2}
                   value={participantList.map(participant => participant.name + ' ' + participant.surname).join(', ')}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={10}>
@@ -330,6 +344,11 @@ export function CreateTask() {
                   rows={4}
                   value={taskDescription}
                   disabled
+                  sx={{
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: "#000000",
+                    },
+                  }}
                 />
               </Grid>
             </Grid>
@@ -386,7 +405,6 @@ export function CreateTask() {
                     Back
                   </Button>
                 )}
-
                 <Button
                   variant="contained"
                   onClick={handleNext}

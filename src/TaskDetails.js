@@ -10,29 +10,29 @@ import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
 import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Paper from "@mui/material/Paper";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import ListItemText from "@mui/material/ListItemText";
-import AddIcon from "@mui/icons-material/Add";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import TaskDetailsComponent from "./Components/TaskDetailsComponent.js";
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import MapIcon from "@mui/icons-material/Map";
 import CheckpointIcon from "@mui/icons-material/LocationOn";
 import ChatIcon from "@mui/icons-material/Chat";
 import { MapView } from "./LiveMap";
 import { CheckpointsView } from "./ChecpointsMap.js";
+import PatrolGroupChatComponent from "./Components/PatrolGroupChatComponent.js"
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import { SubtaskComponent } from "./Components/SubtaskComponent.js";
+import { PatrolParticipantReportComponent } from "./Components/PatrolParticipantReportComponent.js";
 
 const drawerWidth = 240;
 
@@ -97,14 +97,10 @@ const mdTheme = createTheme({
   },
 });
 
-const ChatComponent = () => {
-  return <div>ChatComponent</div>;
-};
-
 export function TaskDetails() {
   const { taskId } = useParams();
   const [open, setOpen] = React.useState(true);
-  const [currentPage, setCurrentPage] = React.useState(null);
+  const [currentPage, setCurrentPage] = React.useState("");
   const [signal, setSignal] = React.useState({});
   const toggleDrawer = () => {
     setOpen(!open);
@@ -131,7 +127,6 @@ export function TaskDetails() {
       const docRef = doc(database, "Tasks", `${taskId}`);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        // console.log("Document data:", docSnap.data());
         setDocumentData(Object.assign({}, docSnap.data()));
         setIsLoaded(true);
       } else {
@@ -149,6 +144,8 @@ export function TaskDetails() {
       setSelectedComponent(
         <TaskDetailsComponent documentData={documentData} />
       );
+      // Tutaj do rozważenia czy warto się z tym babrać i naprawiać
+      // setCurrentPage("details")
     }
   }, [documentData]);
 
@@ -166,7 +163,11 @@ export function TaskDetails() {
         <CheckpointsView documentData={documentData} setSignal={setSignal} />
       );
     } else if (page === "chat") {
-      return <div>Madzia</div>;
+      return <PatrolGroupChatComponent documentData={documentData} />;
+    } else if (page === "subtasks") {
+      return <SubtaskComponent documentData={documentData} />;
+    } else if (page === "reports") {
+      return <PatrolParticipantReportComponent documentData={documentData} />;
     }
   };
 
@@ -194,6 +195,18 @@ export function TaskDetails() {
         </ListItemIcon>
         <ListItemText primary="Checkpoints" />
       </ListItemButton>
+      <ListItemButton onClick={() => setCurrentPage("subtasks")}>
+        <ListItemIcon>
+          <AssignmentIcon />
+        </ListItemIcon>
+        <ListItemText primary="Subtasks" />
+      </ListItemButton>
+      <ListItemButton onClick={() => setCurrentPage("reports")}>
+        <ListItemIcon>
+          <ReportProblemIcon />
+        </ListItemIcon>
+        <ListItemText primary="Patrol Reports" />
+      </ListItemButton>
       <ListItemButton onClick={() => setCurrentPage("chat")}>
         <ListItemIcon>
           <ChatIcon />
@@ -215,7 +228,6 @@ export function TaskDetails() {
     </React.Fragment>
   );
 
-
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
@@ -223,7 +235,7 @@ export function TaskDetails() {
         <AppBar position="absolute" open={open}>
           <Toolbar
             sx={{
-              pr: "24px", // keep right padding when drawer closed
+              pr: "24px",
             }}
           >
             <IconButton
@@ -292,9 +304,7 @@ export function TaskDetails() {
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             {isLoaded ? (
-              <div className="render-container">
-                {documentData !== null ? selectedComponent : null}
-              </div>
+              <div className="render-container">{selectedComponent}</div>
             ) : (
               <Typography>Loading...</Typography>
             )}

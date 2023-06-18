@@ -29,12 +29,6 @@ function App() {
       </Routes>
     </Router>
   );
-
-  // return (
-  //   <div className="App">
-  //     <Login></Login>
-  //   </div>
-  // );
 }
 
 export default App;
