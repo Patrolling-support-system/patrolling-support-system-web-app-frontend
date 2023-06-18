@@ -216,7 +216,7 @@ export function MapView({ documentData }) {
             {Array.from(patrolRouteData).map(([_, patrolRoute]) => (
               <Polyline
                 path={patrolRoute
-                  .sort((a, b) => a.time.seconds - b.time.seconds)
+                  .sort((a, b) => a.date.seconds - b.date.seconds)
                   .map(
                     (route) =>
                       new window.google.maps.LatLng(
