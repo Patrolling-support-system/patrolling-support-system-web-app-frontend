@@ -69,7 +69,7 @@ export function MapView({ documentData }) {
       if (docSnap) {
         var map = [];
         docSnap.forEach((doc) => {
-          if (doc.data().task == taskId) {
+          if (doc.data().taskId == taskId) {
             const d = {
               point: new GeoPoint(Number.parseFloat(doc.data().checkpoint._lat), Number.parseFloat(doc.data().checkpoint._long)),
               name: doc.data().subtaskName
@@ -99,20 +99,20 @@ export function MapView({ documentData }) {
   const getPatrolRouteDetails = async () => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const docRef = collection(database, "Point");
+      const docRef = collection(database, "RoutePoint");
       const docSnap = await getDocs(docRef);
 
       if (docSnap) {
         var map = new Map();
         docSnap.forEach((doc) => {
           if (doc.data().taskId == taskId) {
-            if (map.get(doc.data().patrolingMemberId)) {
-              map.set(doc.data().patrolingMemberId, [
+            if (map.get(doc.data().patrolParticipantId)) {
+              map.set(doc.data().patrolParticipantId, [
                 doc.data(),
-                ...map.get(doc.data().patrolingMemberId),
+                ...map.get(doc.data().patrolParticipantId),
               ]);
             } else {
-              map.set(doc.data().patrolingMemberId, [doc.data()]);
+              map.set(doc.data().patrolParticipantId, [doc.data()]);
             }
           }
         });
@@ -127,7 +127,7 @@ export function MapView({ documentData }) {
   const getPatrolMembersDetails = async () => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const docRef = collection(database, "User");
+      const docRef = collection(database, "Users");
       const docSnap = await getDocs(docRef);
 
       if (docSnap) {
@@ -238,7 +238,7 @@ export function MapView({ documentData }) {
                 lat: patrolRoute[index].location._lat,
                 lng: patrolRoute[index].location._long,
               }}
-              label={patrolMembers.get(patrolRoute[index].patrolingMemberId)}
+              label={patrolMembers.get(patrolRoute[index].patrolParticipantId)}
             />
           );
         })}
