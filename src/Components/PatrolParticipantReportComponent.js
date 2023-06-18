@@ -60,9 +60,9 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
     getFileNamesForImagesAndAudioFiles(report)
   }
 
-  const handleOpenLocalization = (checkpoint) => {
-    // console.log("This is the base checkpoint: ", checkpoint);
-    setSelectedReportLocalization(checkpoint)
+  const handleOpenLocalization = (location) => {
+    // console.log("This is the base location: ", location);
+    setSelectedReportLocalization(location)
   }
   // ------------------------------------------------------------
 
