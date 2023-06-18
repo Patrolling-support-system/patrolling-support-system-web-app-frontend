@@ -1,4 +1,4 @@
-import { Avatar, Fab, List, ListItem, ListItemIcon, ListItemText, Paper, TextField, createTheme } from "@mui/material";
+import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, List, ListItem, ListItemIcon, ListItemText, Paper, TextField, createTheme, } from "@mui/material";
 import { Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import * as React from "react";
@@ -12,6 +12,8 @@ import { query } from "firebase/database";
 import moment from 'moment';
 import styled from "@emotion/styled";
 import { ThemeProvider } from "@emotion/react";
+import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import { Loader } from "@googlemaps/js-api-loader";
 
 
 
@@ -32,12 +34,26 @@ const mdTheme = createTheme({
   },
 });
 
-const OutlinedListItemText = styled(ListItemText)(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.shape.borderRadius,
-  padding: theme.spacing(1),
-  maxWidth: 'auto',
-}));
+const loader = new Loader({
+  apiKey: "AIzaSyBRx2VHwF6GZaONNSYekgsUTRZ6vrMN1FA",
+});
+
+const mapContainerStyle = {
+  margin: 0,
+  padding: 0,
+  width: "100%",
+  height: "630px",
+};
+
+
+let url = "http://maps.google.com/mapfiles/ms/icons/green.png";
+
+// const OutlinedListItemText = styled(ListItemText)(({ theme }) => ({
+//   border: `1px solid ${theme.palette.divider}`,
+//   borderRadius: theme.shape.borderRadius,
+//   padding: theme.spacing(1),
+//   maxWidth: 'auto',
+// }));
 
 const PatrolGroupChatComponent = ({ documentData }) => {
 
@@ -51,6 +67,29 @@ const PatrolGroupChatComponent = ({ documentData }) => {
 
   const [currentChat, setCurrentChat] = React.useState();
 
+  // Message localization dialog
+
+  const [openLocalization, setOpenLocalization] = React.useState(false);
+
+  const handleClickOpenLocalization = () => {
+    setLocalizationLoaded(true);
+    setOpenLocalization(true);
+  };
+
+  const handleCloseLocalization = () => {
+    setOpenLocalization(false);
+  };
+
+  const handleChatMessageClick = (localization) => {
+    // console.log("Message clicked! Localization: ", localization);
+    setClickedMessageLocalization(localization);
+  }
+
+
+  const [localizationLoaded, setLocalizationLoaded] = React.useState(false);
+  const [clickedMessageLocalization, setClickedMessageLocalization] = React.useState(null);
+
+  // ----------------------------------------------------------------------
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -61,7 +100,7 @@ const PatrolGroupChatComponent = ({ documentData }) => {
   const getChatUsersDataFromFirestore = async () => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const collectionRef = collection(database, 'User');
+      const collectionRef = collection(database, 'Users');
       const documentQuery = query(collectionRef, where(documentId(), 'in', documentData.patrolParticipants));
       const querySnapshot = await getDocs(documentQuery)
       const chatParticipantsData = [];
@@ -104,14 +143,14 @@ const PatrolGroupChatComponent = ({ documentData }) => {
             message: data.message,
             senderId: data.senderId,
             receiverId: data.receiverId,
-            date: data.date
+            date: data.date,
+            location: data.location
           };
           chatMessages.push(messageData);
         });
         const sortedMessageData = chatMessages.sort((a, b) => a.date - b.date);
         setMessageList(sortedMessageData);
         setIsLoaded(true);
-        // console.log(sortedMessageData);
       })
     }
   };
@@ -151,10 +190,14 @@ const PatrolGroupChatComponent = ({ documentData }) => {
 
   const scrollToBottom = () => {
     if (listContainerRef.current) {
-      // listContainerRef.current.scrollTop = listContainerRef.current.scrollHeight;
-      listContainerRef.current.scrollIntoView({ behavior: "smooth"})
+      listContainerRef.current.scrollIntoView({ behavior: "smooth" })
     }
   }
+
+
+  const { isMapLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: "AIzaSyBRx2VHwF6GZaONNSYekgsUTRZ6vrMN1FA",
+  });
 
   React.useEffect(() => {
     setIsLoaded(false);
@@ -169,6 +212,12 @@ const PatrolGroupChatComponent = ({ documentData }) => {
     scrollToBottom();
   }, [messageList]);
 
+  React.useEffect(() => {
+    if (clickedMessageLocalization !== null) {
+      handleClickOpenLocalization();
+    }
+  }, [clickedMessageLocalization])
+
 
   return (
     <div>
@@ -176,7 +225,38 @@ const PatrolGroupChatComponent = ({ documentData }) => {
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, position: 'relative' }}>
           {isLoaded ? (
             <Grid container component={Paper}>
+
               <Grid item xs={2}>
+
+                <Dialog open={openLocalization} onClose={handleCloseLocalization} fullWidth>
+                  <DialogTitle>
+                    Report location:
+                  </DialogTitle>
+                  <DialogContent>
+                    {localizationLoaded ? (
+                      <GoogleMap
+                        mapContainerStyle={mapContainerStyle}
+                        zoom={13}
+                        center={{
+                          lat: Number.parseFloat(clickedMessageLocalization._lat),
+                          lng: Number.parseFloat(clickedMessageLocalization._long)
+                        }}
+                      >
+                        <Marker
+                          icon={{ url: url }}
+                          position={{
+                            lat: Number.parseFloat(clickedMessageLocalization._lat),
+                            lng: Number.parseFloat(clickedMessageLocalization._long)
+                          }} />
+                      </GoogleMap>
+                    ) : (null)}
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseLocalization}>
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </Dialog>
                 <List>
                   {chatList.map((item, index) => (
                     <React.Fragment key={index}>
@@ -189,80 +269,86 @@ const PatrolGroupChatComponent = ({ documentData }) => {
                 </List>
               </Grid>
               <Divider orientation="vertical" flexItem />
-              <Grid item xs={9}>        
-                <List style={{ maxHeight: "600px", overflow: "auto", minHeight: "600px" }}>            
-                    {messageList.length === 0 ? (
-                      <Grid>
-                        <Typography variant="h5" align="center">
-                          No messages to/from user yet.
-                        </Typography>
-                      </Grid>
-                    ) : (
-                      messageList.map((item, index) => {
-                        if (item.senderId === currentUserId) {
-                          return (
-                            <ListItem key={index}>
-                              <Grid container>
-                                <Grid item xs={12}>
-                                  {/* <OutlinedListItemText align="right" primary={item.message} /> */}
-                                  <ListItemText align="right">
-                                    <TextField
-                                      variant='outlined'
-                                      margin="normal"
-                                      multiline
-                                      value={item.message}
-                                      disabled
-                                      InputProps={{
-                                        style: { backgroundColor: "#A9AC5D" }
-                                      }}
-                                      sx={{
-                                        "& .MuiInputBase-input.Mui-disabled": {
-                                          WebkitTextFillColor: "#000000",
-                                        },
-                                      }}
-                                    />
-                                  </ListItemText>
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <ListItemText align="right" secondary={moment(item.date.toDate()).format('DD/MM/YYYY HH:mm')} />
-                                </Grid>
+              <Grid item xs={9}>
+                <List style={{ maxHeight: "600px", overflow: "auto", minHeight: "600px" }}>
+                  {messageList.length === 0 ? (
+                    <Grid>
+                      <Typography variant="h5" align="center">
+                        No messages to/from user yet.
+                      </Typography>
+                    </Grid>
+                  ) : (
+                    messageList.map((item, index) => {
+                      if (item.senderId === currentUserId) {
+                        return (
+                          <ListItem key={index}>
+                            <Grid container>
+                              <Grid item xs={12}>
+                                <ListItemText align="right">
+                                  <TextField
+                                    variant='outlined'
+                                    margin="normal"
+                                    multiline
+                                    value={item.message}
+                                    disabled
+                                    InputProps={{
+                                      style: {
+                                        backgroundColor: "#A9AC5D",
+                                        borderRadius: 30
+                                      }
+                                    }}
+                                    sx={{
+                                      "& .MuiInputBase-input.Mui-disabled": {
+                                        WebkitTextFillColor: "#000000",
+                                      },
+                                    }}
+                                  />
+                                </ListItemText>
                               </Grid>
-                            </ListItem>
-                          );
-                        } else {
-                          return (
-                            <ListItem key={index}>
-                              <Grid container>
-                                <Grid item xs={12}>
-                                  {/* <OutlinedListItemText align="left" primary={item.message} /> */}
-                                  <ListItemText align="left">
-                                    <TextField
-                                      variant='outlined'
-                                      margin="normal"
-                                      multiline
-                                      value={item.message}
-                                      disabled
-                                      InputProps={{
-                                        style: { backgroundColor: "#A9AC5D" }
-                                      }}
-                                      sx={{
-                                        "& .MuiInputBase-input.Mui-disabled": {
-                                          WebkitTextFillColor: "#000000",
-                                        },
-                                      }}
-                                    />
-                                  </ListItemText>
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <ListItemText align="left" secondary={moment(item.date.toDate()).format('DD/MM/YYYY HH:mm')} />
-                                </Grid>
+                              <Grid item xs={12}>
+                                <ListItemText align="right" secondary={moment(item.date.toDate()).format('DD/MM/YYYY HH:mm')} />
                               </Grid>
-                            </ListItem>
-                          );
-                        }
-                      })
-                    )}
-                  <div ref={listContainerRef}/>
+                            </Grid>
+                          </ListItem>
+                        );
+                      } else {
+                        return (
+                          <ListItem key={index}>
+                            <Grid container>
+                              <Grid item xs={12}>
+                                {/* <OutlinedListItemText align="left" primary={item.message} /> */}
+                                <ListItemText align="left">
+                                  <TextField
+                                    variant='outlined'
+                                    margin="normal"
+                                    multiline
+                                    value={item.message}
+                                    onClick={() => handleChatMessageClick(item.location)}
+                                    disabled
+                                    InputProps={{
+                                      style: {
+                                        backgroundColor: "#A9AC5D",
+                                        borderRadius: 30
+                                      }
+                                    }}
+                                    sx={{
+                                      "& .MuiInputBase-input.Mui-disabled": {
+                                        WebkitTextFillColor: "#000000",
+                                      },
+                                    }}
+                                  />
+                                </ListItemText>
+                              </Grid>
+                              <Grid item xs={12}>
+                                <ListItemText align="left" secondary={moment(item.date.toDate()).format('DD/MM/YYYY HH:mm')} />
+                              </Grid>
+                            </Grid>
+                          </ListItem>
+                        );
+                      }
+                    })
+                  )}
+                  <div ref={listContainerRef} />
                 </List>
                 <Divider />
                 {/* Text box and send icon */}

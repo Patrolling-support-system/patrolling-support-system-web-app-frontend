@@ -20,7 +20,7 @@ const TaskDetailsComponent = ({ documentData }) => {
   const getNamesFromFirestore = async (selectedParticipants) => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const collectionRef = collection(database, 'User');
+      const collectionRef = collection(database, 'Users');
       const documentQuery = query(collectionRef, where(documentId(), 'in', selectedParticipants));
       const querySnapshot = await getDocs(documentQuery)
       const participantsData = [];
@@ -36,7 +36,7 @@ const TaskDetailsComponent = ({ documentData }) => {
       setParticipantList(participantsData);
 
 
-      const coordinatorRef = doc(database, 'Coordinator', documentData.coordinator);
+      const coordinatorRef = doc(database, 'Coordinators', documentData.coordinator);
       const coordinatorSnapshot = await getDoc(coordinatorRef)
       setCoordinator(coordinatorSnapshot.data());
 

@@ -195,11 +195,11 @@ export const SubtaskComponent = ({ documentData }) => {
       const database = getFirestore();
       const collectionRef = collection(database, 'CheckpointSubtasks');
       const docRef = await addDoc(collectionRef, {
-        task: taskId,
+        taskId: taskId,
         subtaskName: subtaskName,
         description: subtaskDescription,
         checkpoint: checkpoint,
-        participant: selectedParticipant
+        patrolParticipantId: selectedParticipant
       })
       // console.log("Added new document with ID: ", docRef.id);
     }
@@ -207,7 +207,7 @@ export const SubtaskComponent = ({ documentData }) => {
 
   const getSubtaskReportDataFromFirestore = async (subtaskId) => {
     const database = getFirestore();
-    const reportRef = collection(database, "CheckpointReport");
+    const reportRef = collection(database, "Reports");
     const reportQuery = query(reportRef, where("subtaskId", "==", subtaskId));
     const reportSnapshot = await getDocs(reportQuery);
 
@@ -240,7 +240,7 @@ export const SubtaskComponent = ({ documentData }) => {
 
   const checkIfSubtaskContainsReport = async (subtaskId) => {
     const database = getFirestore();
-    const reportRef = collection(database, "CheckpointReport");
+    const reportRef = collection(database, "Reports");
     const reportQuery = query(reportRef, where("subtaskId", "==", subtaskId));
     const reportSnapshot = await getDocs(reportQuery);
 
@@ -263,7 +263,7 @@ export const SubtaskComponent = ({ documentData }) => {
 
   const getParticipantNamesFromFirestore = async (subtaskList) => {
     const database = getFirestore();
-    const participantRef = collection(database, "User")
+    const participantRef = collection(database, "Users")
     const participantQuery = query(participantRef, where(documentId(), "in", documentData.patrolParticipants))
     const paritcipantSnapshot = await getDocs(participantQuery);
     const participantList = [];
@@ -281,7 +281,7 @@ export const SubtaskComponent = ({ documentData }) => {
     setPatrolParticipants(participantList)
 
     const subtaskListWithNames = subtaskList.map((item) => {
-      const user = participantList.find((user) => user.userId === item.participant)
+      const user = participantList.find((user) => user.userId === item.patrolParticipantId)
       const updatedsubtaskList = { ...item, participantName: user.name + " " + user.surname }
       return updatedsubtaskList
     })
@@ -293,7 +293,7 @@ export const SubtaskComponent = ({ documentData }) => {
   const getSubtasksFromFirestore = async (index) => {
     const database = getFirestore();
     const subtaskRef = collection(database, "CheckpointSubtasks")
-    const subtaskQuery = query(subtaskRef, where("task", "==", taskId), where("checkpoint", "==", documentData.checkpoints[index]))
+    const subtaskQuery = query(subtaskRef, where("taskId", "==", taskId), where("checkpoint", "==", documentData.checkpoints[index]))
     const subtaskSnapshot = await getDocs(subtaskQuery);
     const subtaskList = [];
 
@@ -303,7 +303,7 @@ export const SubtaskComponent = ({ documentData }) => {
         id: doc.id,
         subtaskName: data.subtaskName,
         description: data.description,
-        participant: data.participant
+        patrolParticipantId: data.patrolParticipantId
       };
       subtaskList.push(subtask);
     });

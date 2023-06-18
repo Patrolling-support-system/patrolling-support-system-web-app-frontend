@@ -91,8 +91,6 @@ export function CheckpointsView({ documentData, setSignal }) {
   const disableMapAndSaveCheckpoint = async () => {
     setEnabledMap(false);
 
-    console.log(newCheckpointName);
-
     const database = getFirestore();
     const docRef = doc(database, "Tasks", taskId);
 
@@ -142,7 +140,7 @@ export function CheckpointsView({ documentData, setSignal }) {
   const checkIfSafeToDeleteCheckpoint = async (index) => {
     const database = getFirestore();
     const subtaskRef = collection(database, "CheckpointSubtasks");
-    const subtaskQuery = query(subtaskRef, where("task", "==", taskId), where("checkpoint", "==", documentData.checkpoints[index]))
+    const subtaskQuery = query(subtaskRef, where("taskId", "==", taskId), where("checkpoint", "==", documentData.checkpoints[index]))
     const subtaskSnapshot = await getDocs(subtaskQuery);
 
     if (subtaskSnapshot.empty) {

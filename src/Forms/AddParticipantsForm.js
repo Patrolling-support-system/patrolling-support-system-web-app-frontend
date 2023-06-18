@@ -34,7 +34,7 @@ export function AddParticipantsForm({
   const getRowsFromFirestore = async () => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const q = query(collection(database, 'User'));
+      const q = query(collection(database, 'Users'));
       const querySnapshot = await getDocs(q);
       const fetchedRows = [];
       querySnapshot.forEach((doc) => {
@@ -76,7 +76,7 @@ export function AddParticipantsForm({
 
     if (auth.currentUser) {
       const database = getFirestore();
-      const q = query(collection(database, 'User'), where("name", "==", search));
+      const q = query(collection(database, 'Users'), where("name", "==", search));
       const querySnapshot = await getDocs(q);
       const fetchedRows = [];
       querySnapshot.forEach((doc) => {

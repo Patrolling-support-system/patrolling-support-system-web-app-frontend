@@ -109,7 +109,6 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
   // Location dialog handlers
   const [openLocalization, setOpenLocalization] = React.useState(false);
   const handleClickOpenLocalization = () => {
-    console.log(selectedReportLocalization);
     setCheckpointLoaded(true);
     setOpenLocalization(true);
   };
@@ -123,7 +122,7 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
 
   const getParticipantNamesFromFirestore = async (reportData) => {
     const database = getFirestore();
-    const participantRef = collection(database, "User")
+    const participantRef = collection(database, "Users")
     const participantQuery = query(participantRef, where(documentId(), "in", documentData.patrolParticipants))
     const paritcipantSnapshot = await getDocs(participantQuery);
     const participantList = [];
@@ -150,7 +149,7 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
 
   const getReportsFromFirestore = async () => {
     const database = getFirestore();
-    const reportRef = collection(database, 'CheckpointReport');
+    const reportRef = collection(database, 'Reports');
     const reportQuery = query(reportRef, where("taskId", '==', taskId), where("subtaskId", "==", null));
     const reportSnapshot = await getDocs(reportQuery)
     const reportData = [];

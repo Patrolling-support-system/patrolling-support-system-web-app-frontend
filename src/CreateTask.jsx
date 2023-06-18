@@ -84,6 +84,8 @@ export function CreateTask() {
         endDate: endDate,
         taskDescription: taskDescription,
         coordinator: auth.currentUser.uid,
+        checkpoints: [],
+        checkpointNames: []
       });
       console.log("Added new document with ID: ", docRef.id)
     }
@@ -145,7 +147,7 @@ export function CreateTask() {
   const getNamesFromFirestore = async (selectedParticipants) => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const collectionRef = collection(database, 'User');
+      const collectionRef = collection(database, 'Users');
       const documentQuery = query(collectionRef, where(documentId(), 'in', selectedParticipants));
       const querySnapshot = await getDocs(documentQuery)
       const participantsData = [];

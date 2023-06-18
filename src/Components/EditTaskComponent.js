@@ -200,7 +200,7 @@ export function EditTaskComponent() {
   const getNamesFromFirestore = async (selectedParticipants) => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const collectionRef = collection(database, 'User');
+      const collectionRef = collection(database, 'Users');
       const documentQuery = query(collectionRef, where(documentId(), 'in', selectedParticipants));
       const querySnapshot = await getDocs(documentQuery)
       const participantsData = [];
@@ -244,7 +244,7 @@ export function EditTaskComponent() {
   const getCoordinatorsFromFirestore = async (coordinatorId) => {
     if (auth.currentUser) {
       const database = getFirestore();
-      const collectionRef = collection(database, 'Coordinator');
+      const collectionRef = collection(database, 'Coordinators');
       const querySnapshot = await getDocs(collectionRef)
       const coordinatorsData = [];
       querySnapshot.forEach((doc) => {
