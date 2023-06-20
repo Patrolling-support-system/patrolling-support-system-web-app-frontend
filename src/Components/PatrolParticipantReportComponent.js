@@ -138,7 +138,7 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
     });
 
     const reportListWithNames = reportData.map((item) => {
-      const user = participantList.find((user) => user.userId === item.patrolParticipant)
+      const user = participantList.find((user) => user.userId === item.patrolParticipantId)
       const updatedReportList = { ...item, participantName: user.name + " " + user.surname }
       return updatedReportList
     })
@@ -156,6 +156,7 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
     reportSnapshot.forEach((doc) => {
       reportData.push(doc.data());
     });
+
 
     getParticipantNamesFromFirestore(reportData);
   }
@@ -391,7 +392,7 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
                           <IconButton onClick={() => handleOpenReportDetails(item)}>
                             <ArrowDropDownIcon />
                           </IconButton>
-                          <IconButton onClick={() => handleOpenLocalization(item.reportLocation)}>
+                          <IconButton onClick={() => handleOpenLocalization(item.location)}>
                             <LocationOnIcon />
                           </IconButton>
                         </ListItem>
