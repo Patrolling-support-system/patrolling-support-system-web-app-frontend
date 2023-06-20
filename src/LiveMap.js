@@ -8,10 +8,10 @@ import {
 } from "@react-google-maps/api";
 import * as React from "react";
 import { auth } from "./firebase-config.js";
-import { collection, getDocs, getFirestore, GeoPoint, } from "firebase/firestore";
+import { collection, getDocs, getFirestore, GeoPoint, where, onSnapshot, } from "firebase/firestore";
 import { Paper, Typography, Grid } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { push } from "firebase/database";
+import { push, query } from "firebase/database";
 import { InfoWindow } from "@react-google-maps/api";
 
 let url = "http://maps.google.com/mapfiles/ms/icons/green.png";
@@ -101,12 +101,13 @@ export function MapView({ documentData }) {
     if (auth.currentUser) {
       const database = getFirestore();
       const docRef = collection(database, "RoutePoint");
-      const docSnap = await getDocs(docRef);
 
-      if (docSnap) {
-        var map = new Map();
-        docSnap.forEach((doc) => {
-          if (doc.data().taskId == taskId) {
+      const docQuery = query(docRef, where('taskId', '==', taskId));
+
+      const unsubscribe = onSnapshot(docQuery, (querySnapshot) => {
+        if (querySnapshot) {
+          var map = new Map();
+          querySnapshot.forEach((doc) => {
             if (map.get(doc.data().patrolParticipantId)) {
               map.set(doc.data().patrolParticipantId, [
                 doc.data(),
@@ -115,13 +116,14 @@ export function MapView({ documentData }) {
             } else {
               map.set(doc.data().patrolParticipantId, [doc.data()]);
             }
-          }
-        });
+          })
 
-        setPatrolRouteData(map);
-      } else {
-        console.log("No such document!");
-      }
+          setPatrolRouteData(map);
+        } else {
+          console.log("No such document!");
+        }
+
+      });
     }
   };
 
