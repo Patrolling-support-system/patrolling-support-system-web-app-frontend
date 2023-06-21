@@ -24,7 +24,7 @@ import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import 'dayjs/locale/pl';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
+import { addDoc, collection, doc, documentId, getDoc, getDocs, getFirestore, query, setDoc, updateDoc, where } from 'firebase/firestore'
 import moment from 'moment';
 import { Menu } from '@mui/icons-material';
 import { MenuItem } from '@mui/material';
@@ -115,8 +115,10 @@ export function EditTaskComponent() {
     if (auth.currentUser) {
       const database = getFirestore();
 
+
+      // Przerobić tak żeby nie wypierdalało checkpointów
       const docRef = doc(database, 'Tasks', taskId);
-      setDoc(docRef, {
+      updateDoc(docRef, {
         name: taskName,
         location: locationName,
         coordinator: selectedCoordinator,
