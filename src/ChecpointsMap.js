@@ -118,9 +118,6 @@ export function CheckpointsView({ documentData, setSignal }) {
   const handleDrop = (droppedItem) => {
     if (!droppedItem.destination) {
       // The item was dragged outside the droppable area
-      // var updatedList = [...documentData.checkpointNames];
-      // updatedList.splice(droppedItem.source.index, 1);
-      // changeCheckpointOrder(updatedList);
       handleOpenConfirmDeleteDialog(droppedItem.source.index);
     } else if (
       droppedItem.source.droppableId === droppedItem.destination.droppableId &&

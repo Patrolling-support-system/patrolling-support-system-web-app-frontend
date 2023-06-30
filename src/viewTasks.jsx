@@ -45,7 +45,7 @@ export function ViewTask() {
 
   const getNameFromFirestore = async (coordinatorId) => {
     const database = getFirestore();
-    const coordinatorRef = doc(database, "Coordinator", coordinatorId)
+    const coordinatorRef = doc(database, "Coordinators", coordinatorId)
     const coordinatorSnapshot = await getDoc(coordinatorRef);
 
     if (coordinatorSnapshot.exists()) {
