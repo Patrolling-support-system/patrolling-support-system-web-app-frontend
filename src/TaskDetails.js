@@ -102,6 +102,7 @@ export function TaskDetails() {
   const [open, setOpen] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState("");
   const [signal, setSignal] = React.useState({});
+  const[chatParticipant, setChatParticipant] = React.useState({});
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -140,6 +141,17 @@ export function TaskDetails() {
   }, [signal]);
 
   React.useEffect(() => {
+    function_name();
+  }, [chatParticipant])
+
+  const function_name = () => {
+    setSelectedComponent(
+      <PatrolGroupChatComponent documentData={documentData}  patrolParticipantId={chatParticipant}/>
+    );
+    setCurrentPage("chat")
+  }
+
+  React.useEffect(() => {
     if (documentData) {
       setSelectedComponent(
         <TaskDetailsComponent documentData={documentData} />
@@ -153,17 +165,21 @@ export function TaskDetails() {
 
   const [selectedComponent, setSelectedComponent] = React.useState(null);
 
+  const handleMapParticipantClick = () => {
+
+  }
+
   const mapPageToComponent = (page) => {
     if (page === "details") {
       return <TaskDetailsComponent documentData={documentData} />;
     } else if (page === "map") {
-      return <MapView documentData={documentData} />;
+      return <MapView documentData={documentData} setChatParticipant={setChatParticipant} />;
     } else if (page === "checkpoints") {
       return (
         <CheckpointsView documentData={documentData} setSignal={setSignal} />
       );
     } else if (page === "chat") {
-      return <PatrolGroupChatComponent documentData={documentData} />;
+      return <PatrolGroupChatComponent documentData={documentData} patrolParticipantId={null} />;
     } else if (page === "subtasks") {
       return <SubtaskComponent documentData={documentData} />;
     } else if (page === "reports") {

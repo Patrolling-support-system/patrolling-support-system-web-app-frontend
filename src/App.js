@@ -11,6 +11,7 @@ import { ChangePasswordForm } from "./Forms/ChangePasswordForm";
 import { TaskDetails } from "./TaskDetails";
 import { EditTaskComponent } from "./Components/EditTaskComponent";
 import { MapView } from "./LiveMap";
+import PatrolGroupChatComponent from "./Components/PatrolGroupChatComponent";
 
 function App() {
   return (
