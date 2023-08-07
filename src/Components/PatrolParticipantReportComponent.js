@@ -398,7 +398,7 @@ export const PatrolParticipantReportComponent = ({ documentData }) => {
               {checkpointLoaded ? (
                 <GoogleMap
                   mapContainerStyle={mapContainerStyle}
-                  zoom={13}
+                  zoom={15}
                   center={{
                     lat: Number.parseFloat(selectedReportLocalization._lat),
                     lng: Number.parseFloat(selectedReportLocalization._long),

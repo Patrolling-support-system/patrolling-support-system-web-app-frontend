@@ -36,14 +36,14 @@ const mapContainerStyle = {
   height: "605px",
 };
 
-var center;
+
 
 const seededRandom = (input) => Math.sin((input + 1) / Math.PI);
 
 const randomColor = (index) =>
   "hsl(" + Math.floor(seededRandom(index) * 0xff) + ", 50%, 50%)";
 
-export function MapView({ documentData, setChatParticipant}) {
+export function MapView({ documentData, setChatParticipant }) {
   // load routes data from firebase
   const [patrolRouteData, setPatrolRouteData] = React.useState(new Map());
   const [patrolMembers, setPatrolMembers] = React.useState(new Map());
@@ -57,6 +57,10 @@ export function MapView({ documentData, setChatParticipant}) {
   // const handlePatropParticipantClick = (patrolParticipantId) => {
   //   setChatParticipant(patrolParticipantId);
   // };
+  var center = {
+    lat: documentData.checkpoints[0] ? Number.parseFloat(documentData.checkpoints[0]._lat) : 50.06192492003556,
+    lng: documentData.checkpoints[0] ? Number.parseFloat(documentData.checkpoints[0]._long) :  19.93918752197243
+  } 
 
   const mapRef = React.useRef();
   const onMapLoad = React.useCallback((map) => {
@@ -89,10 +93,7 @@ export function MapView({ documentData, setChatParticipant}) {
 
       if (docSnap) {
         var map = [];
-        center = {
-          lat: Number.parseFloat(docSnap.docs.at(0).data().checkpoint._lat),
-          lng: Number.parseFloat(docSnap.docs.at(0).data().checkpoint._long),
-        };
+
         docSnap.forEach((doc) => {
           if (doc.data().taskId == taskId) {
             const d = {
@@ -241,7 +242,7 @@ export function MapView({ documentData, setChatParticipant}) {
                     setSubtaskName(checkpoint);
                   }}
                   label={{
-                    text: (index+1).toString(),
+                    text: (index + 1).toString(),
                     fontSize: "15px",
                     fontWeight: "bold",
                   }}
@@ -260,7 +261,10 @@ export function MapView({ documentData, setChatParticipant}) {
                 <div>
                   <p>
                     <b>
-                      {selectedIndex+1 + ". " + checkpintsNames.at(selectedIndex)}
+                      {selectedIndex +
+                        1 +
+                        ". " +
+                        checkpintsNames.at(selectedIndex)}
                     </b>
                   </p>
                   {selectedSubtaskName.map((name) => {
@@ -308,9 +312,9 @@ export function MapView({ documentData, setChatParticipant}) {
                     fontSize: "10px",
                     fontWeight: "bold",
                   }}
-                  onClick={() => setChatParticipant(
-                    patrolRoute[index].patrolParticipantId
-                  )}
+                  onClick={() =>
+                    setChatParticipant(patrolRoute[index].patrolParticipantId)
+                  }
                 />
               );
             })}

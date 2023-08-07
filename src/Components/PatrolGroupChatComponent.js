@@ -297,12 +297,12 @@ const PatrolGroupChatComponent = ({ documentData, patrolParticipantId }) => {
                   onClose={handleCloseLocalization}
                   fullWidth
                 >
-                  <DialogTitle>Report location:</DialogTitle>
+                  <DialogTitle>Message location:</DialogTitle>
                   <DialogContent>
                     {localizationLoaded ? (
                       <GoogleMap
                         mapContainerStyle={mapContainerStyle}
-                        zoom={13}
+                        zoom={15}
                         center={{
                           lat: Number.parseFloat(
                             clickedMessageLocalization._lat
