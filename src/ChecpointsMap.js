@@ -32,12 +32,15 @@ const mapContainerStyle = {
   height: "630px",
 };
 
-const center = {
-  lat: 50.06192492003556,
-  lng: 19.93918752197243,
-};
 
-let url = "http://maps.google.com/mapfiles/ms/icons/green.png";
+const markerIcon = {
+  path: "M-0.547 -10c-5.523 0-10 4.477-10 10 0 6.628 10 22 10 22s10-15.372 10-22c0-5.523-4.477-10-10-10zm1 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  fillColor: "green",
+  fillOpacity: 0.9,
+  strokeWeight: 0,
+  rotation: 0,
+  scale: 1
+};
 
 const DraggableContainer = styled.div`
   width: max;
@@ -61,6 +64,11 @@ export function CheckpointsView({ documentData, setSignal }) {
   const handleNewCheckpointNameChange = (event) => {
     setNewCheckpointName(event.target.value)
   }
+
+  const center = {
+    lat: Number.parseFloat(documentData.checkpoints[0]._lat),
+    lng: Number.parseFloat(documentData.checkpoints[0]._long)
+  }  
 
   const [checkpointToBeDeleted, setCheckpointToBeDeleted] = useState();
 
@@ -97,7 +105,7 @@ export function CheckpointsView({ documentData, setSignal }) {
     var updatedCheckpointNames;
 
     if (newCheckpointName === "") {
-      updatedCheckpointNames = [...documentData.checkpointNames, `Checkpoint: ${documentData.checkpointNames.length}`];
+      updatedCheckpointNames = [...documentData.checkpointNames, `Checkpoint: ${documentData.checkpointNames.length+1}`];
     } else {
       updatedCheckpointNames = [...documentData.checkpointNames, newCheckpointName];
     }
@@ -291,7 +299,7 @@ export function CheckpointsView({ documentData, setSignal }) {
             <Grid item xs={8} sm={8} lg={8}>
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
-                zoom={13}
+                zoom={15}
                 center={center}
                 onClick={(event) => {
                   if (enabledMap) {
@@ -306,14 +314,16 @@ export function CheckpointsView({ documentData, setSignal }) {
                 {documentData.checkpoints?.map((checkpoint, index) => {
                   var marker = (
                     <Marker
-                      icon={{ url: url }}
+                      icon={markerIcon}
                       key={index}
                       position={{
                         lat: Number.parseFloat(checkpoint._lat),
                         lng: Number.parseFloat(checkpoint._long),
                       }}
                       opacity={0.9}
-                      label={index.toString()}
+                      label={{ text: index.toString(),
+                        fontSize: "15px",
+                        fontWeight: "bold"}}
                     />
                   );
                   return marker;
@@ -321,7 +331,7 @@ export function CheckpointsView({ documentData, setSignal }) {
                 {/* // added checkpoint on map*/}
                 {newMarker !== null ? (
                   <Marker
-                    icon={{ url: url }}
+                    icon={markerIcon}
                     position={{
                       lat: newMarker._lat,
                       lng: newMarker._long,
