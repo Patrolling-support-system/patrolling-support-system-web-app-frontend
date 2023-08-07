@@ -65,9 +65,9 @@ export function CheckpointsView({ documentData, setSignal }) {
     setNewCheckpointName(event.target.value)
   }
 
-  const center = {
-    lat: Number.parseFloat(documentData.checkpoints[0]._lat),
-    lng: Number.parseFloat(documentData.checkpoints[0]._long)
+  var center = {
+    lat: documentData.checkpoints[0] ? Number.parseFloat(documentData.checkpoints[0]._lat) : 50.06192492003556,
+    lng: documentData.checkpoints[0] ? Number.parseFloat(documentData.checkpoints[0]._long) :  19.93918752197243
   }  
 
   const [checkpointToBeDeleted, setCheckpointToBeDeleted] = useState();
