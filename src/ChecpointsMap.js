@@ -5,7 +5,6 @@ import Typography from "@mui/material/Typography";
 import { Button, Dialog, DialogActions, DialogContentText, DialogTitle, Divider, Paper } from "@mui/material";
 import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
 import { Box } from "@mui/material";
-import { Loader } from "@googlemaps/js-api-loader";
 import {
   getFirestore,
   doc,
@@ -20,10 +19,6 @@ import {
 import { useParams } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import styled from "@emotion/styled";
-
-const loader = new Loader({
-  apiKey: "AIzaSyBRx2VHwF6GZaONNSYekgsUTRZ6vrMN1FA",
-});
 
 const mapContainerStyle = {
   margin: 0,
@@ -54,7 +49,6 @@ const DraggableContainer = styled.div`
 `;
 
 export function CheckpointsView({ documentData, setSignal }) {
-  const [disabled, setDisabled] = useState(true);
   const [enabledMap, setEnabledMap] = useState(false);
   const [newMarker, setNewMarker] = useState(null);
   const { taskId } = useParams();
