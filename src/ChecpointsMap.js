@@ -365,7 +365,7 @@ export function CheckpointsView({ documentData, setSignal }) {
                       }}
                       opacity={0.9}
                       label={{
-                        text: index.toString(),
+                        text: (index+1).toString(),
                         fontSize: "15px",
                         fontWeight: "bold",
                       }}
