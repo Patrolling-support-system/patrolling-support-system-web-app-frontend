@@ -1,4 +1,3 @@
-import { Loader } from "@googlemaps/js-api-loader";
 import {
   GoogleMap,
   useLoadScript,
@@ -24,10 +23,6 @@ import { query } from "firebase/database";
 import PatrolGroupChatComponent from "./Components/PatrolGroupChatComponent.js";
 import { useNavigate } from "react-router-dom";
 
-const loader = new Loader({
-  apiKey: "AIzaSyBRx2VHwF6GZaONNSYekgsUTRZ6vrMN1FA",
-});
-
 const mapContainerStyle = {
   top: "5vh",
   margin: 0,
@@ -36,7 +31,14 @@ const mapContainerStyle = {
   height: "605px",
 };
 
-
+const markerIcon = {
+  path: "M-0.547 -10c-5.523 0-10 4.477-10 10 0 6.628 10 22 10 22s10-15.372 10-22c0-5.523-4.477-10-10-10zm1 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  fillColor: "green",
+  fillOpacity: 0.9,
+  strokeWeight: 0,
+  rotation: 0,
+  scale: 1,
+};
 
 const seededRandom = (input) => Math.sin((input + 1) / Math.PI);
 
@@ -58,9 +60,13 @@ export function MapView({ documentData, setChatParticipant }) {
   //   setChatParticipant(patrolParticipantId);
   // };
   var center = {
-    lat: documentData.checkpoints[0] ? Number.parseFloat(documentData.checkpoints[0]._lat) : 50.06192492003556,
-    lng: documentData.checkpoints[0] ? Number.parseFloat(documentData.checkpoints[0]._long) :  19.93918752197243
-  } 
+    lat: documentData.checkpoints[0]
+      ? Number.parseFloat(documentData.checkpoints[0]._lat)
+      : 50.06192492003556,
+    lng: documentData.checkpoints[0]
+      ? Number.parseFloat(documentData.checkpoints[0]._long)
+      : 19.93918752197243,
+  };
 
   const mapRef = React.useRef();
   const onMapLoad = React.useCallback((map) => {
@@ -215,18 +221,9 @@ export function MapView({ documentData, setChatParticipant }) {
             center={center}
             onLoad={onMapLoad}
           >
-            // adding checkpoints to map
             {documentData.checkpoints?.map((checkpoint, index) => {
               const lat = Number.parseFloat(checkpoint._lat);
               const long = Number.parseFloat(checkpoint._long);
-              const markerIcon = {
-                path: "M-0.547 -10c-5.523 0-10 4.477-10 10 0 6.628 10 22 10 22s10-15.372 10-22c0-5.523-4.477-10-10-10zm1 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
-                fillColor: "green",
-                fillOpacity: 0.9,
-                strokeWeight: 0,
-                rotation: 0,
-                scale: 1,
-              };
               var marker = (
                 <Marker
                   icon={markerIcon}
@@ -285,7 +282,7 @@ export function MapView({ documentData, setChatParticipant }) {
                         route.location._long
                       )
                   )}
-                options={{ strokeColor: randomColor(patrolRoute.length) }}
+                options={{ strokeColor: "#1b5e20" }}
               />
             ))}
             // adding route info
@@ -295,10 +292,10 @@ export function MapView({ documentData, setChatParticipant }) {
                 <Marker
                   icon={{
                     path: window.google.maps.SymbolPath.CIRCLE,
-                    fillColor: randomColor(patrolRoute.length),
+                    fillColor: "#1b5e20",
                     fillOpacity: 0.5,
                     scale: 10,
-                    strokeColor: randomColor(patrolRoute.length),
+                    strokeColor: "#1b5e20",
                     strokeWeight: 0.7,
                   }}
                   position={{
@@ -325,10 +322,10 @@ export function MapView({ documentData, setChatParticipant }) {
                 <Marker
                   icon={{
                     path: window.google.maps.SymbolPath.CIRCLE,
-                    fillColor: randomColor(patrolRoute.length),
+                    fillColor: "#1b5e20",
                     fillOpacity: 0.5,
                     scale: 10,
-                    strokeColor: randomColor(patrolRoute.length),
+                    strokeColor: "#1b5e20",
                     strokeWeight: 0.7,
                   }}
                   position={{
